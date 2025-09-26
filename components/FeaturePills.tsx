@@ -22,7 +22,7 @@ export default function FeaturePills() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.35, delay: 0.15 * i }}
-            className="rounded-2xl bg-white/60 backdrop-blur ring-1 ring-black/5 shadow-soft p-5 flex items-start gap-3"
+            className="rounded-2xl bg-white/75 backdrop-blur ring-1 ring-softSage/25 shadow-wood p-5 flex items-start gap-3 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white/85 hover:ring-softSage/35"
           >
             <f.icon className="h-5 w-5 text-slateInk/70" aria-hidden="true" />
             <div>

@@ -38,6 +38,7 @@ const translations: Translations = {
     mbti: "MBTI",
     select: "선택하세요",
     submit: "제출하기",
+    testTitle: "퍼스널 향수 테스트",
   },
   en: {
     headline: "Personal Fragrance Test",
@@ -70,6 +71,7 @@ const translations: Translations = {
     mbti: "MBTI",
     select: "Select",
     submit: "Submit",
+    testTitle: "Personal Fragrance Test",
   },
 };
 

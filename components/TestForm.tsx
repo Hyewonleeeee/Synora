@@ -27,7 +27,7 @@ export default function TestForm() {
 
   return (
     <div className="mx-auto w-full max-w-md px-4 sm:px-0 py-10">
-      <div className="rounded-2xl bg-white/70 backdrop-blur ring-1 ring-black/5 shadow-soft p-6">
+      <div className="rounded-2xl bg-white/80 backdrop-blur ring-1 ring-warmBrown/10 shadow-wood p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white/90 hover:ring-softSage/20">
         <div className="mb-4 flex items-center justify-between text-sm opacity-70" aria-live="polite">
           <span>{t('step')} {step} / 2</span>
           <span>{t(step === 1 ? 'step1Title' : 'step2Title')}</span>
@@ -47,7 +47,7 @@ export default function TestForm() {
                     max={120}
                     value={age}
                     onChange={(e) => setAge(e.target.value)}
-                    className="mt-2 w-full rounded-xl border border-black/10 bg-white px-3 py-2 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pastelLavender"
+                    className="mt-2 w-full rounded-xl border border-softSage/35 bg-white px-3 py-2 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-softSage transition-all duration-200 hover:border-softSage/50 hover:shadow-md"
                     aria-describedby="age-help"
                   />
                   <p id="age-help" className="mt-1 text-xs opacity-70">{t('ageHelp')}</p>
@@ -56,29 +56,29 @@ export default function TestForm() {
                   <fieldset>
                     <legend className="block text-sm font-medium">{t('gender')}</legend>
                     <div className="mt-2 grid grid-cols-2 gap-2">
-                      <label className="inline-flex items-center gap-2 rounded-xl border border-black/10 bg-white px-3 py-2 shadow-sm">
+                      <label className="inline-flex items-center gap-2 rounded-xl border border-softSage/35 bg-white px-3 py-2 shadow-sm transition-all duration-200 hover:border-softSage/50 hover:shadow-md hover:bg-summerBeige/30 cursor-pointer">
                         <input
                           type="radio"
                           name="gender"
                           value="female"
                           checked={gender === 'female'}
                           onChange={(e) => setGender(e.target.value)}
-                          className="accent-slateInk"
+                          className="accent-forestGreen"
                         />
                         <span>{t('female')}</span>
                       </label>
-                      <label className="inline-flex items-center gap-2 rounded-xl border border-black/10 bg-white px-3 py-2 shadow-sm">
+                      <label className="inline-flex items-center gap-2 rounded-xl border border-softSage/35 bg-white px-3 py-2 shadow-sm transition-all duration-200 hover:border-softSage/50 hover:shadow-md hover:bg-summerBeige/30 cursor-pointer">
                         <input
                           type="radio"
                           name="gender"
                           value="male"
                           checked={gender === 'male'}
                           onChange={(e) => setGender(e.target.value)}
-                          className="accent-slateInk"
+                          className="accent-forestGreen"
                         />
                         <span>{t('male')}</span>
                       </label>
-                      <label className="inline-flex items-center gap-2 rounded-xl border border-black/10 bg-white px-3 py-2 shadow-sm col-span-2">
+                      <label className="inline-flex items-center gap-2 rounded-xl border border-softSage/35 bg-white px-3 py-2 shadow-sm col-span-2 transition-all duration-200 hover:border-softSage/50 hover:shadow-md hover:bg-summerBeige/30 cursor-pointer">
                         <input
                           type="radio"
                           name="gender"
@@ -101,7 +101,7 @@ export default function TestForm() {
                   type="button"
                   onClick={next}
                   disabled={!isStep1Valid}
-                  className="inline-flex items-center justify-center rounded-xl bg-slateInk text-white px-5 py-2 text-sm font-medium shadow-soft enabled:hover:scale-[1.01] transition disabled:opacity-50"
+                  className="inline-flex items-center justify-center rounded-xl bg-forestGreen text-lightMint px-5 py-2 text-sm font-medium shadow-soft enabled:hover:scale-[1.01] transition disabled:opacity-50"
                 >
                   {t('next')}
                 </button>
@@ -116,7 +116,7 @@ export default function TestForm() {
                   name="mbti"
                   value={mbti}
                   onChange={(e) => setMbti(e.target.value)}
-                  className="mt-2 w-full rounded-xl border border-black/10 bg-white px-3 py-2 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pastelLavender"
+                  className="mt-2 w-full rounded-xl border border-softSage/35 bg-white px-3 py-2 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-softSage transition-all duration-200 hover:border-softSage/50 hover:shadow-md"
                 >
                   <option value="" disabled>{t('select')}</option>
                   {[
@@ -136,7 +136,7 @@ export default function TestForm() {
                 <button
                   type="button"
                   disabled={!isStep2Valid}
-                  className="inline-flex items-center justify-center rounded-xl bg-slateInk text-white px-5 py-2 text-sm font-medium shadow-soft enabled:hover:scale-[1.01] transition disabled:opacity-50"
+                  className="inline-flex items-center justify-center rounded-xl bg-forestGreen text-lightMint px-5 py-2 text-sm font-medium shadow-soft enabled:hover:scale-[1.01] transition disabled:opacity-50"
                   onClick={() => alert(`${lang === 'ko' ? '제출되었습니다' : 'Submitted'}`)}
                 >
                   {t('submit')}

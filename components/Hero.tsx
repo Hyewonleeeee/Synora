@@ -37,14 +37,14 @@ export default function Hero() {
         <motion.div variants={item} className="mt-8 flex items-center justify-center gap-3">
           <Link
             href="/test"
-            className="inline-flex items-center justify-center rounded-2xl bg-slateInk text-white px-6 py-3 text-sm sm:text-base font-medium shadow-soft transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pastelLavender"
+            className="inline-flex items-center justify-center rounded-2xl bg-forestGreen text-lightMint px-6 py-3 text-sm sm:text-base font-medium shadow-soft transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-softSage"
             aria-label={t('cta')}
           >
             {t('cta')}
           </Link>
           <a
             href="#about"
-            className="inline-flex items-center justify-center rounded-2xl bg-white/70 ring-1 ring-black/5 px-5 py-3 text-sm sm:text-base font-medium text-slateInk/80 hover:bg-white transition"
+            className="inline-flex items-center justify-center rounded-2xl bg-white/80 ring-1 ring-warmBrown/20 px-5 py-3 text-sm sm:text-base font-medium text-slateInk/80 hover:bg-white transition"
           >
             {t('intro')}
           </a>

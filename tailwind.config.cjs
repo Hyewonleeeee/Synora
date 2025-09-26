@@ -8,13 +8,21 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        slateInk: "#0F172A",
-        pastelLavender: "#B7C6FF",
-        pastelLilac: "#EBD7FF",
-        bgTone: "#EAEAEA",
+        slateInk: "#2D1B0E",
+        warmBeige: "#F7F3E9",
+        softWood: "#D4C4A8",
+        warmBrown: "#8B6F47",
+        cream: "#F9F6F0",
+        sageGreen: "#A8C09A",
+        forestGreen: "#7A9B6B",
+        mintCream: "#F2F6F0",
+        summerBeige: "#F5F1E8",
+        softSage: "#B8D4A8",
+        lightMint: "#E8F4E6",
       },
       boxShadow: {
-        soft: "0 10px 30px rgba(15, 23, 42, 0.08)",
+        soft: "0 10px 30px rgba(45, 27, 14, 0.12)",
+        wood: "0 8px 25px rgba(139, 111, 71, 0.15), inset 0 1px 0 rgba(212, 196, 168, 0.3)",
       },
       borderRadius: {
         '2xl': '1rem',
