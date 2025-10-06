@@ -1,0 +1,443 @@
+"use client";
+
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import { useRouter } from 'next/navigation';
+
+type StyleType = 'cleanGirl' | 'softGirl' | 'coquette' | 'lightAcademia' | 'darkAcademia' | 'balletcore' | 'moriGirl' | 'acubi';
+type Scores = Record<StyleType, number>;
+
+const fadeVariants = {
+  initial: { opacity: 0, y: 8 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.25 } },
+  exit: { opacity: 0, y: -8, transition: { duration: 0.2 } },
+};
+
+export default function QuestionFlow() {
+  const { t, lang } = useLanguage();
+  const router = useRouter();
+  
+  const [step, setStep] = useState(0);
+  const [age, setAge] = useState('');
+  const [gender, setGender] = useState('');
+  const [mbti, setMbti] = useState('');
+  const [selections, setSelections] = useState<string[]>([]);
+  const [scores, setScores] = useState<Scores>({
+    cleanGirl: 0, softGirl: 0, coquette: 0, lightAcademia: 0,
+    darkAcademia: 0, balletcore: 0, moriGirl: 0, acubi: 0,
+  });
+
+  const addScore = (styles: StyleType[]) => {
+    setScores(prev => {
+      const newScores = { ...prev };
+      styles.forEach(s => newScores[s]++);
+      return newScores;
+    });
+  };
+
+  const handleAnswer = (value: string, styles: StyleType[]) => {
+    addScore(styles);
+    const newSelections = [...selections, value];
+    setSelections(newSelections);
+    
+    if (value === 'acubi' && step === 6) {
+      alert(lang === 'ko' ? '테토 질문지는 준비 중입니다!' : 'Teto questionnaire coming soon!');
+      return;
+    }
+    
+    if (step < 9) {
+      setStep(step + 1);
+    } else {
+      calculateResult();
+    }
+  };
+
+  const calculateResult = () => {
+    let result: StyleType | null = null;
+    let maxScore = 0;
+
+    ['softGirl', 'coquette', 'balletcore'].forEach(style => {
+      if (scores[style as StyleType] >= 3 && scores[style as StyleType] > maxScore) {
+        maxScore = scores[style as StyleType];
+        result = style as StyleType;
+      }
+    });
+
+    ['cleanGirl', 'lightAcademia', 'darkAcademia', 'moriGirl'].forEach(style => {
+      if (scores[style as StyleType] >= 4 && scores[style as StyleType] > maxScore) {
+        maxScore = scores[style as StyleType];
+        result = style as StyleType;
+      }
+    });
+
+    if (result) {
+      router.push(`/result?style=${result}`);
+    } else {
+      alert(lang === 'ko' ? '결과를 계산할 수 없습니다.' : 'Cannot calculate result.');
+    }
+  };
+
+  const getQuestion = () => {
+    if (step < 2) return null;
+    
+    const prev = selections;
+    
+    // 질문 1 (step 2)
+    if (step === 2) {
+      return {
+        title: { ko: '나는 어떤 이미지에 더 끌리는가?', en: 'Which image am I more attracted to?' },
+        options: [
+          { text: { ko: '부드럽고 사랑스러운 이미지에 더 끌린다.', en: 'I am more attracted to a soft and lovely image.' }, value: 'aegen', styles: ['cleanGirl', 'softGirl', 'coquette', 'lightAcademia', 'darkAcademia', 'balletcore', 'moriGirl'] as StyleType[] },
+          { text: { ko: '강렬하고 카리스마 있는 이미지에 더 끌린다.', en: 'I am more attracted to an intense and charismatic image.' }, value: 'teto', styles: [] as StyleType[] }
+        ]
+      };
+    }
+    
+    // 질문 2 (step 3)
+    if (step === 3) {
+      return {
+        title: { ko: '메이크업 스타일은 어느 쪽을 선호하는가?', en: 'Which makeup style do I prefer?' },
+        options: [
+          { text: { ko: '과한 화장보다 피부 본연의 깨끗함이 드러나는 메이크업을 선호한다.', en: 'I prefer makeup that shows the natural cleanliness of my skin.' }, value: 'clean', styles: ['cleanGirl', 'softGirl', 'lightAcademia', 'balletcore'] as StyleType[] },
+          { text: { ko: '메이크업에선 살짝 레트로한 요소가 매력적이라고 생각한다.', en: 'I think slightly retro elements are attractive in makeup.' }, value: 'retro', styles: ['darkAcademia', 'moriGirl', 'acubi'] as StyleType[] }
+        ]
+      };
+    }
+    
+    // 질문 3 (step 4) - 분기
+    if (step === 4) {
+      if (prev[1] === 'clean') {
+        return {
+          title: { ko: '코디 스타일 중 어느 쪽이 더 나와 가까운가?', en: 'Which coordination style is closer to me?' },
+          options: [
+            { text: { ko: '흰 셔츠, 블랙 팬츠처럼 기본템 코디가 가장 마음 편하다.', en: 'Basic coordination like white shirt and black pants is most comfortable.' }, value: 'basic', styles: ['cleanGirl', 'lightAcademia'] as StyleType[] },
+            { text: { ko: '귀여운 디테일(하트, 꽃무늬, 리본 등)이 있는 패션 아이템을 좋아한다.', en: 'I like fashion items with cute details.' }, value: 'cute', styles: ['softGirl', 'coquette', 'balletcore'] as StyleType[] }
+          ]
+        };
+      } else {
+        return {
+          title: { ko: '패션 아이템 중 어느 쪽에 더 끌리는가?', en: 'Which fashion items attract me more?' },
+          options: [
+            { text: { ko: '트렌치코트, 니트, 블레이저 같은 고전적인 아이템이 끌린다.', en: 'I am attracted to classic items like trench coats, knits, blazers.' }, value: 'classic', styles: ['darkAcademia'] as StyleType[] },
+            { text: { ko: '레이어드 패션에 끌린다.', en: 'I am attracted to layered fashion.' }, value: 'layered', styles: ['acubi', 'moriGirl'] as StyleType[] }
+          ]
+        };
+      }
+    }
+    
+    // 질문 4 (step 5) - 분기
+    if (step === 5) {
+      const q3 = prev[2];
+      if (q3 === 'basic') {
+        return {
+          title: { ko: '나를 가장 잘 표현하는 스타일은?', en: 'Which style best represents me?' },
+          options: [
+            { text: { ko: '정돈된 헤어스타일이 나를 가장 돋보이게 한다.', en: 'A neat hairstyle makes me stand out the most.' }, value: 'neat', styles: ['cleanGirl'] as StyleType[] },
+            { text: { ko: '베이지, 크림, 아이보리 같은 색감이 안정감을 준다.', en: 'Colors like beige, cream, ivory give me stability.' }, value: 'beige', styles: ['lightAcademia'] as StyleType[] }
+          ]
+        };
+      } else if (q3 === 'cute') {
+        return {
+          title: { ko: '나에게 더 어울리는 색감과 디테일은?', en: 'Which colors and details suit me better?' },
+          options: [
+            { text: { ko: '부드럽고 여성스러운 색감을 선호한다.', en: 'I prefer soft and feminine colors.' }, value: 'soft', styles: ['softGirl', 'balletcore'] as StyleType[] },
+            { text: { ko: '리본, 레이스, 프릴 같은 빈티지한 디테일이 좋다.', en: 'I like vintage details like ribbons, lace, frills.' }, value: 'vintage', styles: ['coquette'] as StyleType[] }
+          ]
+        };
+      } else if (q3 === 'classic') {
+        return {
+          title: { ko: '어떤 감성에 더 매력을 느끼는가?', en: 'Which sensibility attracts me more?' },
+          options: [
+            { text: { ko: '앤틱한 인테리어나 빈티지 감성에 매력을 느낀다.', en: 'I feel attracted to antique interiors or vintage sensibility.' }, value: 'antique', styles: ['darkAcademia'] as StyleType[] },
+            { text: { ko: '도시보다는 숲속 감성이 나에게 잘 맞는다고 느낀다.', en: 'I feel that forest sensibility suits me better.' }, value: 'forest', styles: ['moriGirl'] as StyleType[] }
+          ]
+        };
+      } else {
+        return {
+          title: { ko: '어떤 스타일에 더 끌리는가?', en: 'Which style attracts me more?' },
+          options: [
+            { text: { ko: '나는 Y2K 감성에 끌린다.', en: 'I am attracted to Y2K sensibility.' }, value: 'y2k', styles: ['acubi'] as StyleType[] },
+            { text: { ko: '자연친화적이고 순수한 이미지를 추구한다.', en: 'I pursue a nature-friendly and pure image.' }, value: 'nature', styles: ['moriGirl'] as StyleType[] }
+          ]
+        };
+      }
+    }
+    
+    // 질문 5 (step 6)
+    if (step === 6) {
+      const q4 = prev[3];
+      if (q4 === 'neat' || q4 === 'beige') {
+        return {
+          title: { ko: '나의 스타일 선호는?', en: 'My style preference is?' },
+          options: [
+            { text: { ko: '네일은 투명이나 연한 색 위주를 선호한다.', en: 'I prefer transparent or light colored nails.' }, value: 'clearNail', styles: ['cleanGirl'] as StyleType[] },
+            { text: { ko: '지적이면서도 온화한 이미지를 원한다.', en: 'I want an intellectual yet gentle image.' }, value: 'intellectual', styles: ['lightAcademia'] as StyleType[] }
+          ]
+        };
+      } else if (q4 === 'soft') {
+        return {
+          title: { ko: '나에게 더 잘 어울리는 메이크업은?', en: 'Which makeup suits me better?' },
+          options: [
+            { text: { ko: '러블리한 메이크업이 잘 어울린다고 느낀다.', en: 'I feel lovely makeup suits me well.' }, value: 'lovely', styles: ['softGirl'] as StyleType[] },
+            { text: { ko: '가볍고 우아한 분위기를 표현하고 싶다.', en: 'I want to express a light and elegant atmosphere.' }, value: 'elegant', styles: ['balletcore'] as StyleType[] }
+          ]
+        };
+      } else if (q4 === 'vintage') {
+        return {
+          title: { ko: '나에게 더 끌리는 패션은?', en: 'Which fashion attracts me more?' },
+          options: [
+            { text: { ko: '코르셋이나 레이스업 디테일 있는 패션이 끌린다.', en: 'I am attracted to fashion with corset or lace-up details.' }, value: 'corset', styles: ['coquette'] as StyleType[] },
+            { text: { ko: '러블리한 스타일이 좋다.', en: 'I like lovely style.' }, value: 'lovelyStyle', styles: ['softGirl'] as StyleType[] }
+          ]
+        };
+      } else if (q4 === 'antique' || q4 === 'forest') {
+        return {
+          title: { ko: '어떤 감성 소품에 더 끌리는가?', en: 'Which sensibility items attract me more?' },
+          options: [
+            { text: { ko: '일본풍 감성 소품이 마음에 든다.', en: 'I like Japanese-style sensibility items.' }, value: 'japanese', styles: ['moriGirl'] as StyleType[] },
+            { text: { ko: '오래된 책, 서재, 클래식 음악이 잘 어울린다.', en: 'Old books, library, classic music suit me well.' }, value: 'oldBook', styles: ['darkAcademia'] as StyleType[] }
+          ]
+        };
+      } else {
+        return {
+          title: { ko: '나에게 더 맞는 이미지는?', en: 'Which image suits me better?' },
+          options: [
+            { text: { ko: '자연친화적이고 순수한 이미지를 추구한다.', en: 'I pursue a nature-friendly and pure image.' }, value: 'natureFriendly', styles: ['moriGirl'] as StyleType[] },
+            { text: { ko: '나는 Y2K 감성에 끌린다.', en: 'I am attracted to Y2K sensibility.' }, value: 'acubi', styles: ['acubi'] as StyleType[] }
+          ]
+        };
+      }
+    }
+    
+    // 질문 6 (step 7)
+    if (step === 7) {
+      const q5 = prev[4];
+      if (q5 === 'clearNail' || q5 === 'intellectual') {
+        return {
+          title: { ko: '어떤 이미지를 더 표현하고 싶은가?', en: 'Which image do I want to express more?' },
+          options: [
+            { text: { ko: '글로시 립이나 생기 있는 피부 표현에 자신감을 느낀다.', en: 'I feel confident expressing glossy lips or vibrant skin.' }, value: 'glossy', styles: ['cleanGirl'] as StyleType[] },
+            { text: { ko: '클래식 음악, 문학, 예술과 어울리는 스타일을 좋아한다.', en: 'I like styles that match classic music, literature, art.' }, value: 'classic', styles: ['lightAcademia'] as StyleType[] }
+          ]
+        };
+      } else if (q5 === 'lovely' || q5 === 'elegant') {
+        return {
+          title: { ko: '나에게 더 끌리는 패션 디테일은?', en: 'Which fashion details attract me more?' },
+          options: [
+            { text: { ko: '코르셋이나 레이스업 디테일 있는 패션이 끌린다.', en: 'I am attracted to fashion with corset or lace-up details.' }, value: 'corsetDetail', styles: ['coquette'] as StyleType[] },
+            { text: { ko: '곡선적인 실루엣을 가진 옷이 잘 어울린다.', en: 'Clothes with curvy silhouettes suit me well.' }, value: 'curve', styles: ['balletcore'] as StyleType[] }
+          ]
+        };
+      } else if (q5 === 'corset' || q5 === 'lovelyStyle') {
+        return {
+          title: { ko: '나에게 어울리는 무드는?', en: 'Which mood suits me?' },
+          options: [
+            { text: { ko: '여성적이고 우아한 동시에 장난스러운 무드가 어울린다.', en: 'A feminine, elegant yet playful mood suits me.' }, value: 'playful', styles: ['coquette'] as StyleType[] },
+            { text: { ko: '사랑스러운 무드가 잘 어울린다.', en: 'A lovely mood suits me well.' }, value: 'lovelyMood', styles: ['softGirl'] as StyleType[] }
+          ]
+        };
+      } else {
+        return {
+          title: { ko: '어떤 감성 소품이 더 끌리는가?', en: 'Which sensibility items attract me more?' },
+          options: [
+            { text: { ko: '일본풍 감성 소품이 마음에 든다.', en: 'I like Japanese-style sensibility items.' }, value: 'japanese', styles: ['moriGirl'] as StyleType[] },
+            { text: { ko: '오래된 책, 서재, 클래식 음악이 잘 어울린다.', en: 'Old books, library, classic music suit me well.' }, value: 'oldBook', styles: ['darkAcademia'] as StyleType[] }
+          ]
+        };
+      }
+    }
+    
+    // 질문 7 (step 8)
+    if (step === 8) {
+      const q6 = prev[5];
+      if (q6 === 'glossy' || q6 === 'classic') {
+        return {
+          title: { ko: '향수 취향은 어느 쪽인가?', en: 'Which fragrance preference do I have?' },
+          options: [
+            { text: { ko: '향수는 진한 향보다 비누향, 산뜻한 향을 좋아한다.', en: 'I prefer soap scents and fresh fragrances over strong scents.' }, value: 'fresh', styles: ['cleanGirl'] as StyleType[] },
+            { text: { ko: '유럽풍 카페나 캠퍼스 무드가 어울린다고 느낀다.', en: 'I feel European cafe or campus mood suits me.' }, value: 'campus', styles: ['lightAcademia'] as StyleType[] }
+          ]
+        };
+      } else if (q6 === 'corsetDetail' || q6 === 'curve' || q6 === 'playful' || q6 === 'lovelyMood') {
+        return {
+          title: { ko: '어떤 스타일이 더 편안한가?', en: 'Which style is more comfortable?' },
+          options: [
+            { text: { ko: '파스텔 톤 옷을 보면 마음이 편안해진다.', en: 'I feel comfortable when I see pastel tone clothes.' }, value: 'pastel', styles: ['softGirl'] as StyleType[] },
+            { text: { ko: '리본 헤어, 니트 워머 같은 소품이 좋다.', en: 'I like items like ribbon hair and knit warmers.' }, value: 'ribbon', styles: ['balletcore'] as StyleType[] }
+          ]
+        };
+      } else {
+        return {
+          title: { ko: '어떤 소재와 색감을 선호하는가?', en: 'Which materials and colors do I prefer?' },
+          options: [
+            { text: { ko: '린넨, 코튼 같은 자연 소재 옷을 선호한다.', en: 'I prefer clothes made of natural materials like linen and cotton.' }, value: 'natural', styles: ['moriGirl'] as StyleType[] },
+            { text: { ko: '검정, 브라운, 딥 그린 같은 어두운 색감을 좋아한다.', en: 'I like dark colors like black, brown, deep green.' }, value: 'dark', styles: ['darkAcademia'] as StyleType[] }
+          ]
+        };
+      }
+    }
+    
+    // 질문 8 (step 9)
+    if (step === 9) {
+      const q7 = prev[6];
+      if (q7 === 'fresh' || q7 === 'campus') {
+        return {
+          title: { ko: '나는 어떤 사람으로 보이고 싶은가?', en: 'How do I want to be seen?' },
+          options: [
+            { text: { ko: '정리정돈이 잘되고 깔끔한 사람으로 보이고 싶어한다.', en: 'I want to be seen as well-organized and neat.' }, value: 'organized', styles: ['cleanGirl'] as StyleType[] },
+            { text: { ko: '가을과 봄처럼 따뜻하면서 차분한 계절의 무드를 담고 싶어한다.', en: 'I want to embody the warm yet calm mood of autumn and spring.' }, value: 'calm', styles: ['lightAcademia'] as StyleType[] }
+          ]
+        };
+      } else if (q7 === 'pastel' || q7 === 'ribbon') {
+        return {
+          title: { ko: '나에게 어울리는 무드는?', en: 'Which mood suits me?' },
+          options: [
+            { text: { ko: '편안하면서도 사랑스러운 무드를 표현하고 싶다.', en: 'I want to express a comfortable yet lovely mood.' }, value: 'softMood', styles: ['softGirl'] as StyleType[] },
+            { text: { ko: '여성적이고 우아한 동시에 장난스러운 무드가 어울린다.', en: 'A feminine, elegant yet playful mood suits me.' }, value: 'coquetteMood', styles: ['coquette'] as StyleType[] }
+          ]
+        };
+      } else {
+        return {
+          title: { ko: '내가 원하는 분위기는?', en: 'Which atmosphere do I want?' },
+          options: [
+            { text: { ko: '소박하고 따뜻한, 약간은 동화적인 분위기를 풍기고 싶어한다.', en: 'I want to give off a simple, warm, fairy-tale atmosphere.' }, value: 'simple', styles: ['moriGirl'] as StyleType[] },
+            { text: { ko: '문학, 철학, 역사 같은 학문에 몰두하는 지적인 사람처럼 보이고 싶어한다.', en: 'I want to be seen as intellectual, immersed in literature, philosophy, history.' }, value: 'deep', styles: ['darkAcademia'] as StyleType[] }
+          ]
+        };
+      }
+    }
+    
+    return null;
+  };
+
+  const currentQuestion = getQuestion();
+  const isStep0Valid = age !== '' && Number(age) > 0 && gender !== '';
+  const isStep1Valid = mbti !== '';
+
+  return (
+    <div className="mx-auto w-full max-w-2xl px-4 sm:px-0 py-10">
+      <div className="rounded-2xl bg-white/80 backdrop-blur ring-1 ring-warmBrown/10 shadow-wood p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white/90 hover:ring-softSage/20">
+        <div className="mb-6">
+          <div className="flex items-center justify-between text-sm opacity-70 mb-2">
+            <span>{t('step')} {step + 1} / 10</span>
+            <span>{Math.round(((step + 1) / 10) * 100)}%</span>
+          </div>
+          <div className="h-2 bg-warmBeige/30 rounded-full overflow-hidden">
+            <motion.div 
+              className="h-full bg-forestGreen"
+              animate={{ width: `${((step + 1) / 10) * 100}%` }}
+              transition={{ duration: 0.3 }}
+            />
+          </div>
+        </div>
+
+        <AnimatePresence mode="wait">
+          <motion.div key={step} variants={fadeVariants} initial="initial" animate="animate" exit="exit">
+            {step === 0 && (
+              <div className="space-y-5">
+                <h2 className="text-lg sm:text-xl font-medium mb-6">{t('step1Title')}</h2>
+                <div>
+                  <label htmlFor="age" className="block text-sm font-medium">{t('age')}</label>
+                  <input
+                    id="age"
+                    type="number"
+                    inputMode="numeric"
+                    min={1}
+                    max={120}
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
+                    className="mt-2 w-full rounded-xl border border-softSage/35 bg-white px-3 py-2 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-softSage transition-all duration-200 hover:border-softSage/50 hover:shadow-md"
+                  />
+                </div>
+                <div>
+                  <fieldset>
+                    <legend className="block text-sm font-medium">{t('gender')}</legend>
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                      {(['female', 'male', 'other'] as const).map((g, idx) => (
+                        <label 
+                          key={g}
+                          className={`inline-flex items-center gap-2 rounded-xl border border-softSage/35 bg-white px-3 py-2 shadow-sm transition-all duration-200 hover:border-softSage/50 hover:shadow-md hover:bg-summerBeige/30 cursor-pointer ${idx === 2 ? 'col-span-2' : ''}`}
+                        >
+                          <input
+                            type="radio"
+                            name="gender"
+                            value={g}
+                            checked={gender === g}
+                            onChange={(e) => setGender(e.target.value)}
+                            className="accent-forestGreen"
+                          />
+                          <span>{t(g)}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+                </div>
+                <div className="mt-6 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setStep(1)}
+                    disabled={!isStep0Valid}
+                    className="inline-flex items-center justify-center rounded-xl bg-forestGreen text-lightMint px-5 py-2 text-sm font-medium shadow-soft enabled:hover:scale-[1.01] transition disabled:opacity-50"
+                  >
+                    {t('next')}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {step === 1 && (
+              <div>
+                <h2 className="text-lg sm:text-xl font-medium mb-6">{t('step2Title')}</h2>
+                <label htmlFor="mbti" className="block text-sm font-medium">{t('mbti')}</label>
+                <select
+                  id="mbti"
+                  value={mbti}
+                  onChange={(e) => setMbti(e.target.value)}
+                  className="mt-2 w-full rounded-xl border border-softSage/35 bg-white px-3 py-2 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-softSage transition-all duration-200 hover:border-softSage/50 hover:shadow-md"
+                >
+                  <option value="" disabled>{t('select')}</option>
+                  {['INTJ','INTP','ENTJ','ENTP','INFJ','INFP','ENFJ','ENFP','ISTJ','ISFJ','ESTJ','ESFJ','ISTP','ISFP','ESTP','ESFP'].map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+                <div className="mt-6 flex items-center justify-between">
+                  <button type="button" onClick={() => setStep(0)} className="text-sm opacity-70 hover:opacity-100 transition">
+                    {t('back')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStep(2)}
+                    disabled={!isStep1Valid}
+                    className="inline-flex items-center justify-center rounded-xl bg-forestGreen text-lightMint px-5 py-2 text-sm font-medium shadow-soft enabled:hover:scale-[1.01] transition disabled:opacity-50"
+                  >
+                    {t('next')}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {step >= 2 && currentQuestion && (
+              <>
+                <h3 className="text-base sm:text-lg font-medium mb-6 text-forestGreen">
+                  {currentQuestion.title[lang]}
+                </h3>
+                <div className="space-y-3">
+                  {currentQuestion.options.map((option, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleAnswer(option.value, option.styles)}
+                      className="w-full text-left p-4 rounded-xl border border-softSage/35 bg-white hover:bg-summerBeige/30 hover:border-softSage/50 hover:shadow-md transition-all duration-200"
+                    >
+                      <span className="text-sm sm:text-base leading-relaxed">{option.text[lang]}</span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}

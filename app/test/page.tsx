@@ -1,6 +1,6 @@
 "use client";
 
-import TestForm from '@/components/TestForm';
+import QuestionFlow from '@/components/QuestionFlow';
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 export default function TestPage() {
@@ -11,7 +11,7 @@ export default function TestPage() {
       <div className="mx-auto max-w-3xl px-4 sm:px-6 pt-10 text-center">
         <h1 className="text-xl sm:text-2xl font-semibold">{t('testTitle')}</h1>
       </div>
-      <TestForm />
+      <QuestionFlow />
     </main>
   );
 }
