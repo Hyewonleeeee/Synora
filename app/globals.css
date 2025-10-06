@@ -47,4 +47,17 @@ body {
   border-radius: 0.5rem;
 }
 
+/* Hover only on devices with mouse (prevents sticky hover on touch) */
+@media (hover: hover) and (pointer: fine) {
+  .hover-mouse\:bg-summerBeige\/30:hover {
+    background-color: rgba(245, 241, 232, 0.3);
+  }
+  .hover-mouse\:border-softSage\/50:hover {
+    border-color: rgba(184, 212, 168, 0.5);
+  }
+  .hover-mouse\:shadow-md:hover {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  }
+}
+
 

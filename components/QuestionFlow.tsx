@@ -427,7 +427,7 @@ export default function QuestionFlow() {
                     <button
                       key={idx}
                       onClick={() => handleAnswer(option.value, option.styles)}
-                      className="w-full text-left p-4 rounded-xl border border-softSage/35 bg-white hover:bg-summerBeige/30 hover:border-softSage/50 hover:shadow-md transition-all duration-200"
+                      className="w-full text-left p-4 rounded-xl border border-softSage/35 bg-white hover-mouse:bg-summerBeige/30 hover-mouse:border-softSage/50 hover-mouse:shadow-md active:bg-summerBeige/40 active:scale-[0.99] transition-all duration-200"
                     >
                       <span className="text-sm sm:text-base leading-relaxed">{option.text[lang]}</span>
                     </button>
