@@ -19,6 +19,10 @@ function ResultContent() {
     balletcore: { ko: '발레코어', en: 'Balletcore' },
     moriGirl: { ko: '모리걸', en: 'Mori Girl' },
     acubi: { ko: '아쿠비', en: 'Acubi' },
+    mobWife: { ko: '몹 와이프', en: 'Mob Wife' },
+    rockstar: { ko: '락스타', en: 'Rockstar' },
+    vampire: { ko: '뱀파이어', en: 'Vampire' },
+    bossBabe: { ko: '보스 베이브', en: 'Boss Babe' },
   };
 
   const styleName = style && styleNames[style as keyof typeof styleNames]

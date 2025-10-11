@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import { useRouter } from 'next/navigation';
 
-type StyleType = 'cleanGirl' | 'softGirl' | 'coquette' | 'lightAcademia' | 'darkAcademia' | 'balletcore' | 'moriGirl' | 'acubi';
+type StyleType = 'cleanGirl' | 'softGirl' | 'coquette' | 'lightAcademia' | 'darkAcademia' | 'balletcore' | 'moriGirl' | 'acubi' | 'mobWife' | 'rockstar' | 'vampire' | 'bossBabe';
 type Scores = Record<StyleType, number>;
 
 const fadeVariants = {
@@ -26,6 +26,7 @@ export default function QuestionFlow() {
   const [scores, setScores] = useState<Scores>({
     cleanGirl: 0, softGirl: 0, coquette: 0, lightAcademia: 0,
     darkAcademia: 0, balletcore: 0, moriGirl: 0, acubi: 0,
+    mobWife: 0, rockstar: 0, vampire: 0, bossBabe: 0,
   });
 
   const addScore = (styles: StyleType[]) => {
@@ -41,8 +42,16 @@ export default function QuestionFlow() {
     const newSelections = [...selections, value];
     setSelections(newSelections);
     
-    if (value === 'acubi' && step === 6) {
-      alert(lang === 'ko' ? '테토 질문지는 준비 중입니다!' : 'Teto questionnaire coming soon!');
+    // 특별 분기: 질문 5-3에서 아쿠비 선택 시 테토로 전환
+    if (step === 6 && value === 'acubiSwitch') {
+      // 테토의 질문 1,2를 이미 통과한 것으로 간주
+      // 질문 0: teto 선택
+      // 질문 1: artistic 선택 (아쿠비 포함)
+      const tetoSelections = ['teto', 'artistic', ...newSelections.slice(0, -1)];
+      setSelections(tetoSelections);
+      addScore(['acubi', 'mobWife', 'rockstar', 'vampire', 'bossBabe']); // 테토 질문 1
+      addScore(['vampire', 'rockstar', 'acubi']); // 테토 질문 2
+      setStep(4); // 테토 질문 3으로 이동
       return;
     }
     
@@ -57,6 +66,7 @@ export default function QuestionFlow() {
     let result: StyleType | null = null;
     let maxScore = 0;
 
+    // 에겐: 소프트걸, 코켓, 발레코어는 3개 이상
     ['softGirl', 'coquette', 'balletcore'].forEach(style => {
       if (scores[style as StyleType] >= 3 && scores[style as StyleType] > maxScore) {
         maxScore = scores[style as StyleType];
@@ -64,7 +74,16 @@ export default function QuestionFlow() {
       }
     });
 
+    // 에겐: 나머지는 4개 이상
     ['cleanGirl', 'lightAcademia', 'darkAcademia', 'moriGirl'].forEach(style => {
+      if (scores[style as StyleType] >= 4 && scores[style as StyleType] > maxScore) {
+        maxScore = scores[style as StyleType];
+        result = style as StyleType;
+      }
+    });
+
+    // 테토: 모두 4개 이상
+    ['acubi', 'mobWife', 'rockstar', 'vampire', 'bossBabe'].forEach(style => {
       if (scores[style as StyleType] >= 4 && scores[style as StyleType] > maxScore) {
         maxScore = scores[style as StyleType];
         result = style as StyleType;
@@ -89,47 +108,74 @@ export default function QuestionFlow() {
         title: { ko: '나는 어떤 이미지에 더 끌리는가?', en: 'Which image am I more attracted to?' },
         options: [
           { text: { ko: '부드럽고 사랑스러운 이미지에 더 끌린다.', en: 'I am more attracted to a soft and lovely image.' }, value: 'aegen', styles: ['cleanGirl', 'softGirl', 'coquette', 'lightAcademia', 'darkAcademia', 'balletcore', 'moriGirl'] as StyleType[] },
-          { text: { ko: '강렬하고 카리스마 있는 이미지에 더 끌린다.', en: 'I am more attracted to an intense and charismatic image.' }, value: 'teto', styles: [] as StyleType[] }
+          { text: { ko: '강렬하고 카리스마 있는 이미지에 더 끌린다.', en: 'I am more attracted to an intense and charismatic image.' }, value: 'teto', styles: ['acubi', 'mobWife', 'rockstar', 'vampire', 'bossBabe'] as StyleType[] }
         ]
       };
     }
     
-    // 질문 2 (step 3)
+    // 질문 2 (step 3) - 에겐 vs 테토 분기
     if (step === 3) {
-      return {
-        title: { ko: '메이크업 스타일은 어느 쪽을 선호하는가?', en: 'Which makeup style do I prefer?' },
-        options: [
-          { text: { ko: '과한 화장보다 피부 본연의 깨끗함이 드러나는 메이크업을 선호한다.', en: 'I prefer makeup that shows the natural cleanliness of my skin.' }, value: 'clean', styles: ['cleanGirl', 'softGirl', 'lightAcademia', 'balletcore'] as StyleType[] },
-          { text: { ko: '메이크업에선 살짝 레트로한 요소가 매력적이라고 생각한다.', en: 'I think slightly retro elements are attractive in makeup.' }, value: 'retro', styles: ['darkAcademia', 'moriGirl', 'acubi'] as StyleType[] }
-        ]
-      };
-    }
-    
-    // 질문 3 (step 4) - 분기
-    if (step === 4) {
-      if (prev[1] === 'clean') {
+      if (prev[0] === 'aegen') {
+        // 에겐 질문 2
         return {
-          title: { ko: '코디 스타일 중 어느 쪽이 더 나와 가까운가?', en: 'Which coordination style is closer to me?' },
+          title: { ko: '메이크업 스타일은 어느 쪽을 선호하는가?', en: 'Which makeup style do I prefer?' },
           options: [
-            { text: { ko: '흰 셔츠, 블랙 팬츠처럼 기본템 코디가 가장 마음 편하다.', en: 'Basic coordination like white shirt and black pants is most comfortable.' }, value: 'basic', styles: ['cleanGirl', 'lightAcademia'] as StyleType[] },
-            { text: { ko: '귀여운 디테일(하트, 꽃무늬, 리본 등)이 있는 패션 아이템을 좋아한다.', en: 'I like fashion items with cute details.' }, value: 'cute', styles: ['softGirl', 'coquette', 'balletcore'] as StyleType[] }
+            { text: { ko: '과한 화장보다 피부 본연의 깨끗함이 드러나는 메이크업을 선호한다.', en: 'I prefer makeup that shows the natural cleanliness of my skin.' }, value: 'clean', styles: ['cleanGirl', 'softGirl', 'lightAcademia', 'balletcore'] as StyleType[] },
+            { text: { ko: '메이크업에선 살짝 레트로한 요소가 매력적이라고 생각한다.', en: 'I think slightly retro elements are attractive in makeup.' }, value: 'retro', styles: ['darkAcademia', 'moriGirl', 'acubi'] as StyleType[] }
           ]
         };
       } else {
+        // 테토 질문 2
         return {
-          title: { ko: '패션 아이템 중 어느 쪽에 더 끌리는가?', en: 'Which fashion items attract me more?' },
+          title: { ko: '어떤 무드를 더 좋아하는가?', en: 'Which mood do I prefer?' },
           options: [
-            { text: { ko: '트렌치코트, 니트, 블레이저 같은 고전적인 아이템이 끌린다.', en: 'I am attracted to classic items like trench coats, knits, blazers.' }, value: 'classic', styles: ['darkAcademia'] as StyleType[] },
-            { text: { ko: '레이어드 패션에 끌린다.', en: 'I am attracted to layered fashion.' }, value: 'layered', styles: ['acubi', 'moriGirl'] as StyleType[] }
+            { text: { ko: '나는 도시적인 성공한 여성의 무드를 좋아한다.', en: 'I like the mood of a successful urban woman.' }, value: 'urban', styles: ['mobWife', 'bossBabe'] as StyleType[] },
+            { text: { ko: '나는 무심한듯 예술적인 무드를 좋아한다.', en: 'I like an artistic mood that seems indifferent.' }, value: 'artistic', styles: ['vampire', 'rockstar', 'acubi'] as StyleType[] }
           ]
         };
       }
     }
     
-    // 질문 4 (step 5) - 분기
+    // 질문 3 (step 4) - 에겐 vs 테토 분기
+    if (step === 4) {
+      if (prev[0] === 'aegen') {
+        // 에겐 질문 3
+        if (prev[1] === 'clean') {
+          return {
+            title: { ko: '코디 스타일 중 어느 쪽이 더 나와 가까운가?', en: 'Which coordination style is closer to me?' },
+            options: [
+              { text: { ko: '흰 셔츠, 블랙 팬츠처럼 기본템 코디가 가장 마음 편하다.', en: 'Basic coordination like white shirt and black pants is most comfortable.' }, value: 'basic', styles: ['cleanGirl', 'lightAcademia'] as StyleType[] },
+              { text: { ko: '귀여운 디테일(하트, 꽃무늬, 리본 등)이 있는 패션 아이템을 좋아한다.', en: 'I like fashion items with cute details.' }, value: 'cute', styles: ['softGirl', 'coquette', 'balletcore'] as StyleType[] }
+            ]
+          };
+        } else {
+          return {
+            title: { ko: '패션 아이템 중 어느 쪽에 더 끌리는가?', en: 'Which fashion items attract me more?' },
+            options: [
+              { text: { ko: '트렌치코트, 니트, 블레이저 같은 고전적인 아이템이 끌린다.', en: 'I am attracted to classic items like trench coats, knits, blazers.' }, value: 'classic', styles: ['darkAcademia'] as StyleType[] },
+              { text: { ko: '레이어드 패션에 끌린다.', en: 'I am attracted to layered fashion.' }, value: 'layered', styles: ['acubi', 'moriGirl'] as StyleType[] }
+            ]
+          };
+        }
+      } else {
+        // 테토 질문 3
+        return {
+          title: { ko: '내가 동경하는 이미지는?', en: 'Which image do I admire?' },
+          options: [
+            { text: { ko: '나는 카리스마 있는 여성상을 동경한다.', en: 'I admire a charismatic female image.' }, value: 'charisma', styles: ['mobWife', 'bossBabe'] as StyleType[] },
+            { text: { ko: '나는 블랙, 실버 같은 컬러 조합에 끌린다.', en: 'I am attracted to color combinations like black and silver.' }, value: 'blackSilver', styles: ['acubi', 'rockstar'] as StyleType[] }
+          ]
+        };
+      }
+    }
+    
+    // 질문 4 (step 5) - 에겐 vs 테토 분기
     if (step === 5) {
       const q3 = prev[2];
-      if (q3 === 'basic') {
+      
+      if (prev[0] === 'aegen') {
+        // 에겐 질문 4
+        if (q3 === 'basic') {
         return {
           title: { ko: '나를 가장 잘 표현하는 스타일은?', en: 'Which style best represents me?' },
           options: [
@@ -153,20 +199,33 @@ export default function QuestionFlow() {
             { text: { ko: '도시보다는 숲속 감성이 나에게 잘 맞는다고 느낀다.', en: 'I feel that forest sensibility suits me better.' }, value: 'forest', styles: ['moriGirl'] as StyleType[] }
           ]
         };
+        } else {
+          return {
+            title: { ko: '어떤 스타일에 더 끌리는가?', en: 'Which style attracts me more?' },
+            options: [
+              { text: { ko: '나는 Y2K 감성에 끌린다.', en: 'I am attracted to Y2K sensibility.' }, value: 'y2k', styles: ['acubi'] as StyleType[] },
+              { text: { ko: '자연친화적이고 순수한 이미지를 추구한다.', en: 'I pursue a nature-friendly and pure image.' }, value: 'nature', styles: ['moriGirl'] as StyleType[] }
+            ]
+          };
+        }
       } else {
+        // 테토 질문 4
         return {
-          title: { ko: '어떤 스타일에 더 끌리는가?', en: 'Which style attracts me more?' },
+          title: { ko: '옷을 고를 때 중요하게 생각하는 것은?', en: 'What do I value when choosing clothes?' },
           options: [
-            { text: { ko: '나는 Y2K 감성에 끌린다.', en: 'I am attracted to Y2K sensibility.' }, value: 'y2k', styles: ['acubi'] as StyleType[] },
-            { text: { ko: '자연친화적이고 순수한 이미지를 추구한다.', en: 'I pursue a nature-friendly and pure image.' }, value: 'nature', styles: ['moriGirl'] as StyleType[] }
+            { text: { ko: '나는 옷을 고를 때, 고급스러운 재질을 중요하게 생각한다.', en: 'I value luxurious materials when choosing clothes.' }, value: 'luxury', styles: ['mobWife', 'bossBabe'] as StyleType[] },
+            { text: { ko: '화려하면서도 약간은 기괴하거나 독특한 스타일에 관심이 많다.', en: 'I am interested in styles that are gorgeous yet somewhat bizarre or unique.' }, value: 'unique', styles: ['vampire'] as StyleType[] }
           ]
         };
       }
     }
     
-    // 질문 5 (step 6)
+    // 질문 5 (step 6) - 에겐 vs 테토 분기
     if (step === 6) {
       const q4 = prev[3];
+      
+      if (prev[0] === 'aegen') {
+        // 에겐 질문 5
       if (q4 === 'neat' || q4 === 'beige') {
         return {
           title: { ko: '나의 스타일 선호는?', en: 'My style preference is?' },
@@ -191,29 +250,60 @@ export default function QuestionFlow() {
             { text: { ko: '러블리한 스타일이 좋다.', en: 'I like lovely style.' }, value: 'lovelyStyle', styles: ['softGirl'] as StyleType[] }
           ]
         };
-      } else if (q4 === 'antique' || q4 === 'forest') {
+      } else if (q4 === 'antique') {
         return {
-          title: { ko: '어떤 감성 소품에 더 끌리는가?', en: 'Which sensibility items attract me more?' },
+          title: { ko: '어떤 학문과 예술에 관심이 있는가?', en: 'Which studies and arts interest me?' },
           options: [
-            { text: { ko: '일본풍 감성 소품이 마음에 든다.', en: 'I like Japanese-style sensibility items.' }, value: 'japanese', styles: ['moriGirl'] as StyleType[] },
-            { text: { ko: '오래된 책, 서재, 클래식 음악이 잘 어울린다.', en: 'Old books, library, classic music suit me well.' }, value: 'oldBook', styles: ['darkAcademia'] as StyleType[] }
+            { text: { ko: '문학, 철학, 역사 같은 학문에 관심이 많다.', en: 'I am interested in studies like literature, philosophy, history.' }, value: 'study', styles: ['darkAcademia'] as StyleType[] },
+            { text: { ko: '자연과 관련된 소박한 예술에 끌린다.', en: 'I am attracted to simple arts related to nature.' }, value: 'natureArt', styles: ['moriGirl'] as StyleType[] }
           ]
         };
-      } else {
+      } else if (q4 === 'forest') {
         return {
           title: { ko: '나에게 더 맞는 이미지는?', en: 'Which image suits me better?' },
           options: [
             { text: { ko: '자연친화적이고 순수한 이미지를 추구한다.', en: 'I pursue a nature-friendly and pure image.' }, value: 'natureFriendly', styles: ['moriGirl'] as StyleType[] },
-            { text: { ko: '나는 Y2K 감성에 끌린다.', en: 'I am attracted to Y2K sensibility.' }, value: 'acubi', styles: ['acubi'] as StyleType[] }
+            { text: { ko: '나는 Y2K 감성에 끌린다.', en: 'I am attracted to Y2K sensibility.' }, value: 'acubiSwitch', styles: ['acubi'] as StyleType[] }
           ]
         };
+        } else {
+          return {
+            title: { ko: '나에게 더 맞는 이미지는?', en: 'Which image suits me better?' },
+            options: [
+              { text: { ko: '자연친화적이고 순수한 이미지를 추구한다.', en: 'I pursue a nature-friendly and pure image.' }, value: 'natureFriendly', styles: ['moriGirl'] as StyleType[] },
+              { text: { ko: '나는 Y2K 감성에 끌린다.', en: 'I am attracted to Y2K sensibility.' }, value: 'acubiSwitch', styles: ['acubi'] as StyleType[] }
+            ]
+          };
+        }
+      } else {
+        // 테토 질문 5
+        if (q4 === 'luxury') {
+          return {
+            title: { ko: '어떤 소재와 컬러를 선호하는가?', en: 'Which materials and colors do I prefer?' },
+            options: [
+              { text: { ko: '퍼, 가죽, 패턴 등 화려한 소재에 관심이 많다.', en: 'I am interested in gorgeous materials like fur, leather, patterns.' }, value: 'gorgeous', styles: ['mobWife'] as StyleType[] },
+              { text: { ko: '화이트, 베이지, 블랙 같은 모던한 컬러를 자주 고른다.', en: 'I often choose modern colors like white, beige, black.' }, value: 'modern', styles: ['bossBabe'] as StyleType[] }
+            ]
+          };
+        } else {
+          return {
+            title: { ko: '어떤 패션과 컬러에 끌리는가?', en: 'Which fashion and colors attract me?' },
+            options: [
+              { text: { ko: '사이버펑크 분위기나 미래지향적 패션이 흥미롭다.', en: 'Cyberpunk atmosphere or futuristic fashion is interesting.' }, value: 'cyber', styles: ['acubi', 'rockstar'] as StyleType[] },
+              { text: { ko: '블랙, 버건디, 딥 레드 같은 어두운 색감을 자주 고른다.', en: 'I often choose dark colors like black, burgundy, deep red.' }, value: 'darkColor', styles: ['vampire'] as StyleType[] }
+            ]
+          };
+        }
       }
     }
     
-    // 질문 6 (step 7)
+    // 질문 6 (step 7) - 에겐 vs 테토 분기
     if (step === 7) {
       const q5 = prev[4];
-      if (q5 === 'clearNail' || q5 === 'intellectual') {
+      
+      if (prev[0] === 'aegen') {
+        // 에겐 질문 6
+        if (q5 === 'clearNail' || q5 === 'intellectual') {
         return {
           title: { ko: '어떤 이미지를 더 표현하고 싶은가?', en: 'Which image do I want to express more?' },
           options: [
@@ -237,21 +327,52 @@ export default function QuestionFlow() {
             { text: { ko: '사랑스러운 무드가 잘 어울린다.', en: 'A lovely mood suits me well.' }, value: 'lovelyMood', styles: ['softGirl'] as StyleType[] }
           ]
         };
+        } else if (q5 === 'japanese' || q5 === 'oldBook' || q5 === 'study' || q5 === 'natureArt') {
+          return {
+            title: { ko: '어떤 감성 소품이 더 끌리는가?', en: 'Which sensibility items attract me more?' },
+            options: [
+              { text: { ko: '일본풍 감성 소품이 마음에 든다.', en: 'I like Japanese-style sensibility items.' }, value: 'japaneseItem', styles: ['moriGirl'] as StyleType[] },
+              { text: { ko: '오래된 책, 서재, 클래식 음악이 잘 어울린다.', en: 'Old books, library, classic music suit me well.' }, value: 'oldBookItem', styles: ['darkAcademia'] as StyleType[] }
+            ]
+          };
+        } else {
+          return {
+            title: { ko: '편안함을 느끼는 공간은?', en: 'Which space makes me feel comfortable?' },
+            options: [
+              { text: { ko: '숲이나 시골 같은 자연 공간이 편안하다.', en: 'Natural spaces like forests or countryside are comfortable.' }, value: 'forestSpace', styles: ['moriGirl'] as StyleType[] },
+              { text: { ko: '고풍스러운 도서관이나 서재가 편안하다.', en: 'Antique libraries or studies are comfortable.' }, value: 'librarySpace', styles: ['darkAcademia'] as StyleType[] }
+            ]
+          };
+        }
       } else {
-        return {
-          title: { ko: '어떤 감성 소품이 더 끌리는가?', en: 'Which sensibility items attract me more?' },
-          options: [
-            { text: { ko: '일본풍 감성 소품이 마음에 든다.', en: 'I like Japanese-style sensibility items.' }, value: 'japanese', styles: ['moriGirl'] as StyleType[] },
-            { text: { ko: '오래된 책, 서재, 클래식 음악이 잘 어울린다.', en: 'Old books, library, classic music suit me well.' }, value: 'oldBook', styles: ['darkAcademia'] as StyleType[] }
-          ]
-        };
+        // 테토 질문 6
+        if (q5 === 'gorgeous' || q5 === 'modern') {
+          return {
+            title: { ko: '어떤 메이크업과 액세서리를 선호하는가?', en: 'Which makeup and accessories do I prefer?' },
+            options: [
+              { text: { ko: '레드 립 같은 강렬한 메이크업을 즐긴다.', en: 'I enjoy intense makeup like red lips.' }, value: 'redLip', styles: ['mobWife'] as StyleType[] },
+              { text: { ko: '굵은 골드 체인이나 명품 시계 같은 액세서리를 선호한다.', en: 'I prefer accessories like thick gold chains or luxury watches.' }, value: 'goldChain', styles: ['bossBabe'] as StyleType[] }
+            ]
+          };
+        } else {
+          return {
+            title: { ko: '어떤 아이템이 더 잘 어울리는가?', en: 'Which items suit me better?' },
+            options: [
+              { text: { ko: '가죽 재킷, 체인 액세서리 같은 아이템이 잘 어울린다.', en: 'Items like leather jackets and chain accessories suit me well.' }, value: 'leather', styles: ['acubi', 'rockstar'] as StyleType[] },
+              { text: { ko: '나는 초커나 레이스 장식 같은 고딕풍 액세서리에 끌린다.', en: 'I am attracted to Gothic accessories like chokers or lace decorations.' }, value: 'gothic', styles: ['vampire'] as StyleType[] }
+            ]
+          };
+        }
       }
     }
     
-    // 질문 7 (step 8)
+    // 질문 7 (step 8) - 에겐 vs 테토 분기
     if (step === 8) {
       const q6 = prev[5];
-      if (q6 === 'glossy' || q6 === 'classic') {
+      
+      if (prev[0] === 'aegen') {
+        // 에겐 질문 7
+        if (q6 === 'glossy' || q6 === 'classic') {
         return {
           title: { ko: '향수 취향은 어느 쪽인가?', en: 'Which fragrance preference do I have?' },
           options: [
@@ -267,21 +388,52 @@ export default function QuestionFlow() {
             { text: { ko: '리본 헤어, 니트 워머 같은 소품이 좋다.', en: 'I like items like ribbon hair and knit warmers.' }, value: 'ribbon', styles: ['balletcore'] as StyleType[] }
           ]
         };
+        } else if (q6 === 'japaneseItem' || q6 === 'oldBookItem') {
+          return {
+            title: { ko: '어떤 소재와 색감을 선호하는가?', en: 'Which materials and colors do I prefer?' },
+            options: [
+              { text: { ko: '린넨, 코튼 같은 자연 소재 옷을 선호한다.', en: 'I prefer clothes made of natural materials like linen and cotton.' }, value: 'natural', styles: ['moriGirl'] as StyleType[] },
+              { text: { ko: '검정, 브라운, 딥 그린 같은 어두운 색감을 좋아한다.', en: 'I like dark colors like black, brown, deep green.' }, value: 'dark', styles: ['darkAcademia'] as StyleType[] }
+            ]
+          };
+        } else {
+          return {
+            title: { ko: '어떤 환경에서 가장 편안함을 느끼는가?', en: 'In which environment do I feel most comfortable?' },
+            options: [
+              { text: { ko: '비 오는 날, 따뜻한 차와 책을 즐기는 시간이 행복하다.', en: 'I am happy with warm tea and books on rainy days.' }, value: 'teaBook', styles: ['moriGirl'] as StyleType[] },
+              { text: { ko: '조용한 서재에서 사색하는 시간이 좋다.', en: 'I like time for contemplation in a quiet study.' }, value: 'quietStudy', styles: ['darkAcademia'] as StyleType[] }
+            ]
+          };
+        }
       } else {
-        return {
-          title: { ko: '어떤 소재와 색감을 선호하는가?', en: 'Which materials and colors do I prefer?' },
-          options: [
-            { text: { ko: '린넨, 코튼 같은 자연 소재 옷을 선호한다.', en: 'I prefer clothes made of natural materials like linen and cotton.' }, value: 'natural', styles: ['moriGirl'] as StyleType[] },
-            { text: { ko: '검정, 브라운, 딥 그린 같은 어두운 색감을 좋아한다.', en: 'I like dark colors like black, brown, deep green.' }, value: 'dark', styles: ['darkAcademia'] as StyleType[] }
-          ]
-        };
+        // 테토 질문 7
+        if (q6 === 'redLip' || q6 === 'goldChain') {
+          return {
+            title: { ko: '내가 더 끌리는 스타일 요소는?', en: 'Which style element attracts me more?' },
+            options: [
+              { text: { ko: '드라마, 영화 속 마피아 부인 캐릭터에 매력을 느낀다.', en: 'I feel attracted to mafia wife characters in dramas and movies.' }, value: 'mafiaWife', styles: ['mobWife'] as StyleType[] },
+              { text: { ko: '패션 아이템으로 애니멀 프린트(호피)를 좋아한다.', en: 'I like animal prints (leopard) as fashion items.' }, value: 'animalFashion', styles: ['bossBabe'] as StyleType[] }
+            ]
+          };
+        } else {
+          return {
+            title: { ko: '어떤 무드와 공간이 더 편안한가?', en: 'Which mood and space are more comfortable?' },
+            options: [
+              { text: { ko: '공연장, 락 페스티벌 무드에서 편안함을 느낀다.', en: 'I feel comfortable in concert halls and rock festival moods.' }, value: 'concert', styles: ['acubi', 'rockstar'] as StyleType[] },
+              { text: { ko: '오래된 성이나 고풍스러운 공간에 매력을 느낀다.', en: 'I feel attracted to old castles or antique spaces.' }, value: 'castle', styles: ['vampire'] as StyleType[] }
+            ]
+          };
+        }
       }
     }
     
-    // 질문 8 (step 9)
+    // 질문 8 (step 9) - 에겐 vs 테토 분기
     if (step === 9) {
       const q7 = prev[6];
-      if (q7 === 'fresh' || q7 === 'campus') {
+      
+      if (prev[0] === 'aegen') {
+        // 에겐 질문 8
+        if (q7 === 'fresh' || q7 === 'campus') {
         return {
           title: { ko: '나는 어떤 사람으로 보이고 싶은가?', en: 'How do I want to be seen?' },
           options: [
@@ -297,14 +449,34 @@ export default function QuestionFlow() {
             { text: { ko: '여성적이고 우아한 동시에 장난스러운 무드가 어울린다.', en: 'A feminine, elegant yet playful mood suits me.' }, value: 'coquetteMood', styles: ['coquette'] as StyleType[] }
           ]
         };
+        } else {
+          return {
+            title: { ko: '내가 원하는 분위기는?', en: 'Which atmosphere do I want?' },
+            options: [
+              { text: { ko: '소박하고 따뜻한, 약간은 동화적인 분위기를 풍기고 싶어한다.', en: 'I want to give off a simple, warm, fairy-tale atmosphere.' }, value: 'simple', styles: ['moriGirl'] as StyleType[] },
+              { text: { ko: '문학, 철학, 역사 같은 학문에 몰두하는 지적인 사람처럼 보이고 싶어한다.', en: 'I want to be seen as intellectual, immersed in literature, philosophy, history.' }, value: 'deep', styles: ['darkAcademia'] as StyleType[] }
+            ]
+          };
+        }
       } else {
-        return {
-          title: { ko: '내가 원하는 분위기는?', en: 'Which atmosphere do I want?' },
-          options: [
-            { text: { ko: '소박하고 따뜻한, 약간은 동화적인 분위기를 풍기고 싶어한다.', en: 'I want to give off a simple, warm, fairy-tale atmosphere.' }, value: 'simple', styles: ['moriGirl'] as StyleType[] },
-            { text: { ko: '문학, 철학, 역사 같은 학문에 몰두하는 지적인 사람처럼 보이고 싶어한다.', en: 'I want to be seen as intellectual, immersed in literature, philosophy, history.' }, value: 'deep', styles: ['darkAcademia'] as StyleType[] }
-          ]
-        };
+        // 테토 질문 8
+        if (q7 === 'redLipStyle' || q7 === 'animalPrint') {
+          return {
+            title: { ko: '내가 추구하는 스타일은?', en: 'Which style do I pursue?' },
+            options: [
+              { text: { ko: '타인의 시선을 압도하는 파워풀한 스타일을 추구한다.', en: 'I pursue a powerful style that overwhelms others.' }, value: 'powerful', styles: ['mobWife'] as StyleType[] },
+              { text: { ko: '깔끔하고 단정하면서도 권위 있는 스타일을 추구한다.', en: 'I pursue a neat, tidy yet authoritative style.' }, value: 'authority', styles: ['bossBabe'] as StyleType[] }
+            ]
+          };
+        } else {
+          return {
+            title: { ko: '내가 더 끌리는 감성은?', en: 'Which sensibility attracts me more?' },
+            options: [
+              { text: { ko: '나는 Y2K 감성에 끌린다.', en: 'I am attracted to Y2K sensibility.' }, value: 'y2kFinal', styles: ['acubi'] as StyleType[] },
+              { text: { ko: '거칠고 와일드한 분위기가 매력적이라고 본다.', en: 'I find rough and wild atmosphere attractive.' }, value: 'wild', styles: ['rockstar'] as StyleType[] }
+            ]
+          };
+        }
       }
     }
     
@@ -432,6 +604,18 @@ export default function QuestionFlow() {
                       <span className="text-sm sm:text-base leading-relaxed">{option.text[lang]}</span>
                     </button>
                   ))}
+                </div>
+                <div className="mt-6 flex justify-start">
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      setStep(Math.max(0, step - 1));
+                      setSelections(selections.slice(0, -1));
+                    }}
+                    className="text-sm opacity-70 hover:opacity-100 transition"
+                  >
+                    {t('back')}
+                  </button>
                 </div>
               </>
             )}
