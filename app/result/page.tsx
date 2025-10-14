@@ -11,6 +11,7 @@ function ResultContent() {
   const { lang } = useLanguage();
 
   const styleNames: Record<string, { ko: string; en: string }> = {
+    // 여성
     cleanGirl: { ko: '클린걸', en: 'Clean Girl' },
     softGirl: { ko: '소프트걸', en: 'Soft Girl' },
     coquette: { ko: '코켓', en: 'Coquette' },
@@ -23,6 +24,15 @@ function ResultContent() {
     rockstar: { ko: '락스타', en: 'Rockstar' },
     vampire: { ko: '뱀파이어', en: 'Vampire' },
     bossBabe: { ko: '보스 베이브', en: 'Boss Babe' },
+    // 남성
+    cleanBoy: { ko: '클린 보이', en: 'Clean Boy' },
+    softBoy: { ko: '소프트 보이', en: 'Soft Boy' },
+    darkAcademiaBoy: { ko: '다크 아카데미아 보이', en: 'Dark Academia Boy' },
+    naturalBoy: { ko: '내츄럴 보이', en: 'Natural Boy' },
+    streetBoy: { ko: '스트릿 보이', en: 'Street Boy' },
+    rockBoy: { ko: '락 보이', en: 'Rock Boy' },
+    gentleBoy: { ko: '젠틀 보이', en: 'Gentle Boy' },
+    techBoy: { ko: '테크 보이', en: 'Tech Boy' },
   };
 
   const styleName = style && styleNames[style as keyof typeof styleNames]
