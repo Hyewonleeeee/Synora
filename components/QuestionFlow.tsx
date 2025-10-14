@@ -232,9 +232,16 @@ export default function QuestionFlow() {
   };
 
   const handleAnswer = (value: string, styles: StyleType[]) => {
+    // 디버깅: 답변과 점수 추가 전 상태
+    console.log('Before addScore - value:', value, 'styles:', styles);
+    console.log('Before addScore - current scores:', scores);
+    
     addScore(styles);
     const newSelections = [...selections, value];
     setSelections(newSelections);
+    
+    // 디버깅: 답변과 점수 추가 후 상태
+    console.log('After addScore - new selections:', newSelections);
     
     // 특별 분기: 질문 5-3에서 아쿠비 선택 시 테토로 전환
     if (step === 6 && value === 'acubiSwitch') {
@@ -251,6 +258,8 @@ export default function QuestionFlow() {
     
     // 남성은 7단계(질문 6개), 여성은 9단계(질문 8개)
     const maxStep = gender === 'male' ? 7 : 9;
+    
+    console.log('Current step:', step, 'Max step:', maxStep, 'Gender:', gender);
     
     if (step < maxStep) {
       setStep(step + 1);
