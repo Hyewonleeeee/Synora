@@ -263,6 +263,10 @@ export default function QuestionFlow() {
     let result: StyleType | null = null;
     let maxScore = 0;
 
+    // 디버깅용: 점수 출력
+    console.log('Current scores:', scores);
+    console.log('Gender:', gender);
+
     if (gender === 'female') {
       // 여성: 에겐 소프트걸/코켓/발레코어는 3개 이상
       ['softGirl', 'coquette', 'balletcore'].forEach(style => {
@@ -288,9 +292,9 @@ export default function QuestionFlow() {
         }
       });
     } else {
-      // 남성: 모두 4개 이상 (총 6개 질문 중 4개)
+      // 남성: 모두 2개 이상 (더 관대한 기준)
       ['cleanBoy', 'softBoy', 'darkAcademiaBoy', 'naturalBoy', 'streetBoy', 'rockBoy', 'gentleBoy', 'techBoy'].forEach(style => {
-        if (scores[style as StyleType] >= 4 && scores[style as StyleType] > maxScore) {
+        if (scores[style as StyleType] >= 2 && scores[style as StyleType] > maxScore) {
           maxScore = scores[style as StyleType];
           result = style as StyleType;
         }
