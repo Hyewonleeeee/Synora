@@ -82,48 +82,31 @@ export default function QuestionFlow() {
     // 남성 질문 3 (step 4)
     if (currentStep === 4) {
       if (prev[0] === 'nonTeto') {
-        if (prev[1] === 'minimal') {
-          return {
-            title: { ko: '나에게 더 맞는 스타일은?', en: 'Which style suits me better?' },
-            options: [
-              { text: { ko: '나는 꾸민 듯 안 꾸민 듯한 미니멀 스타일이 가장 편하다.', en: 'Effortlessly minimal style is most comfortable.' }, value: 'effortless', styles: ['cleanBoy'] as StyleType[] },
-              { text: { ko: '나는 부드럽고 따뜻한 인상을 준다는 말을 자주 듣는다.', en: 'I often hear that I give a soft and warm impression.' }, value: 'warm', styles: ['naturalBoy'] as StyleType[] }
-            ]
-          };
-        } else {
-          return {
-            title: { ko: '나에게 더 맞는 스타일은?', en: 'Which style suits me better?' },
-            options: [
-              { text: { ko: '나는 부드럽고 따뜻한 인상을 준다는 말을 자주 듣는다.', en: 'I often hear that I give a soft and warm impression.' }, value: 'warmSoft', styles: ['softBoy'] as StyleType[] },
-              { text: { ko: '나는 트렌치코트나 브라운 계열 블레이저를 자주 입는다.', en: 'I often wear trench coats or brown blazers.' }, value: 'classic', styles: ['darkAcademiaBoy'] as StyleType[] }
-            ]
-          };
-        }
+        // 논테토: 질문2와 무관하게 다시 선택
+        return {
+          title: { ko: '나에게 더 맞는 스타일은?', en: 'Which style suits me better?' },
+          options: [
+            { text: { ko: '나는 꾸민 듯 안 꾸민 듯한 미니멀 스타일이 가장 편하다.', en: 'Effortlessly minimal style is most comfortable.' }, value: 'minimal3', styles: ['cleanBoy', 'naturalBoy'] as StyleType[] },
+            { text: { ko: '나는 부드럽고 따뜻한 인상을 준다는 말을 자주 듣는다.', en: 'I often hear that I give a soft and warm impression.' }, value: 'emotional3', styles: ['softBoy', 'darkAcademiaBoy'] as StyleType[] }
+          ]
+        };
       } else {
-        if (prev[1] === 'highEnergy') {
-          return {
-            title: { ko: '나에게 더 맞는 아이템은?', en: 'Which items suit me better?' },
-            options: [
-              { text: { ko: '나는 후드티, 조거팬츠, 스니커즈를 자주 입는다.', en: 'I often wear hoodies, jogger pants, sneakers.' }, value: 'hoodie', styles: ['streetBoy'] as StyleType[] },
-              { text: { ko: '나는 가죽 재킷이나 부츠를 즐겨 신는다.', en: 'I enjoy wearing leather jackets or boots.' }, value: 'leather', styles: ['rockBoy'] as StyleType[] }
-            ]
-          };
-        } else {
-          return {
-            title: { ko: '나에게 더 맞는 아이템은?', en: 'Which items suit me better?' },
-            options: [
-              { text: { ko: '나는 구두나 시계 등 디테일한 아이템을 신경 쓴다.', en: 'I care about detailed items like shoes or watches.' }, value: 'details', styles: ['gentleBoy'] as StyleType[] },
-              { text: { ko: '나는 애플워치, 이어폰, 백팩 등 테크 아이템을 항상 가지고 다닌다.', en: 'I always carry tech items like Apple Watch, earphones, backpack.' }, value: 'tech', styles: ['techBoy'] as StyleType[] }
-            ]
-          };
-        }
+        // 테토: 질문2와 무관하게 다시 선택
+        return {
+          title: { ko: '나에게 더 맞는 아이템은?', en: 'Which items suit me better?' },
+          options: [
+            { text: { ko: '나는 체인, 반지 등 메탈 액세서리를 좋아한다.', en: 'I like metal accessories like chains and rings.' }, value: 'metal', styles: ['streetBoy', 'rockBoy'] as StyleType[] },
+            { text: { ko: '나는 유행보다는 오래가는 스타일을 선호한다.', en: 'I prefer timeless style over trends.' }, value: 'timeless', styles: ['gentleBoy', 'techBoy'] as StyleType[] }
+          ]
+        };
       }
     }
     
-    // 남성 질문 4 (step 5)
+    // 남성 질문 4 (step 5) - 질문3 결과에 따라 분기
     if (currentStep === 5) {
       const q3 = prev[2];
-      if (q3 === 'effortless' || q3 === 'warm') {
+      if (q3 === 'minimal3') {
+        // 미니멀: 클린 vs 내츄럴
         return {
           title: { ko: '나의 스타일 지향점은?', en: 'What is my style direction?' },
           options: [
@@ -131,15 +114,59 @@ export default function QuestionFlow() {
             { text: { ko: '나는 린넨, 코튼, 니트처럼 자연 소재의 옷을 선호한다.', en: 'I prefer clothes made of natural materials.' }, value: 'naturalMaterial', styles: ['naturalBoy'] as StyleType[] }
           ]
         };
-      } else if (q3 === 'warmSoft' || q3 === 'classic') {
+      } else if (q3 === 'emotional3') {
+        // 감성: 소프트 vs 다크
         return {
           title: { ko: '나의 색감 선호는?', en: 'What is my color preference?' },
           options: [
             { text: { ko: '나는 파스텔 톤이나 부드러운 컬러의 옷을 자주 고른다.', en: 'I often choose pastel tones or soft colors.' }, value: 'pastelColor', styles: ['softBoy'] as StyleType[] },
+            { text: { ko: '나는 트렌치코트나 브라운 계열 블레이저를 자주 입는다.', en: 'I often wear trench coats or brown blazers.' }, value: 'darkCoat', styles: ['darkAcademiaBoy'] as StyleType[] }
+          ]
+        };
+      } else if (q3 === 'metal') {
+        // 하이에너지: 스트릿 vs 락
+        return {
+          title: { ko: '나에게 더 맞는 아이템은?', en: 'Which items suit me better?' },
+          options: [
+            { text: { ko: '나는 후드티, 조거팬츠, 스니커즈를 자주 입는다.', en: 'I often wear hoodies, jogger pants, sneakers.' }, value: 'hoodie', styles: ['streetBoy'] as StyleType[] },
+            { text: { ko: '나는 가죽 재킷이나 부츠를 즐겨 신는다.', en: 'I enjoy wearing leather jackets or boots.' }, value: 'leather', styles: ['rockBoy'] as StyleType[] }
+          ]
+        };
+      } else {
+        // 하이컨트롤: 젠틀 vs 테크
+        return {
+          title: { ko: '나에게 더 맞는 아이템은?', en: 'Which items suit me better?' },
+          options: [
+            { text: { ko: '나는 구두나 시계 등 디테일한 아이템을 신경 쓴다.', en: 'I care about detailed items like shoes or watches.' }, value: 'details', styles: ['gentleBoy'] as StyleType[] },
+            { text: { ko: '나는 애플워치, 이어폰, 백팩 등 테크 아이템을 항상 가지고 다닌다.', en: 'I always carry tech items like Apple Watch, earphones, backpack.' }, value: 'tech', styles: ['techBoy'] as StyleType[] }
+          ]
+        };
+      }
+    }
+    
+    // 남성 질문 5 (step 6)
+    if (currentStep === 6) {
+      const q3 = prev[2];
+      if (q3 === 'minimal3') {
+        // 미니멀: 클린 vs 내츄럴
+        return {
+          title: { ko: '나의 헤어스타일 선호는?', en: 'What is my hairstyle preference?' },
+          options: [
+            { text: { ko: '나는 헤어스타일은 늘 가지런하고 깔끔하게 유지하려 한다.', en: 'I always try to keep my hairstyle neat and tidy.' }, value: 'neatHair', styles: ['cleanBoy'] as StyleType[] },
+            { text: { ko: '나는 꾸며진 느낌보다 자연스럽다는 말을 듣는 게 좋다.', en: 'I prefer being called natural rather than styled.' }, value: 'naturalLook', styles: ['naturalBoy'] as StyleType[] }
+          ]
+        };
+      } else if (q3 === 'emotional3') {
+        // 감성: 소프트 vs 다크
+        return {
+          title: { ko: '나의 헤어와 메이크업 선호는?', en: 'What is my hair and makeup preference?' },
+          options: [
+            { text: { ko: '나는 자연스러운 헤어와 내추럴 메이크업을 선호한다.', en: 'I prefer natural hair and natural makeup.' }, value: 'naturalMakeup', styles: ['softBoy'] as StyleType[] },
             { text: { ko: '나는 브라운, 다크 그린, 네이비 같은 컬러가 잘 어울린다.', en: 'Colors like brown, dark green, navy suit me well.' }, value: 'darkColor', styles: ['darkAcademiaBoy'] as StyleType[] }
           ]
         };
-      } else if (q3 === 'hoodie' || q3 === 'leather') {
+      } else if (q3 === 'metal') {
+        // 하이에너지: 스트릿 vs 락
         return {
           title: { ko: '나의 스타일 선호는?', en: 'What is my style preference?' },
           options: [
@@ -148,6 +175,7 @@ export default function QuestionFlow() {
           ]
         };
       } else {
+        // 하이컨트롤: 젠틀 vs 테크
         return {
           title: { ko: '나의 이미지 지향점은?', en: 'What is my image direction?' },
           options: [
@@ -158,48 +186,11 @@ export default function QuestionFlow() {
       }
     }
     
-    // 남성 질문 5 (step 6)
-    if (currentStep === 6) {
-      const q4 = prev[3];
-      if (q4 === 'organized' || q4 === 'naturalMaterial') {
-        return {
-          title: { ko: '나의 헤어스타일 선호는?', en: 'What is my hairstyle preference?' },
-          options: [
-            { text: { ko: '나는 헤어스타일은 늘 가지런하고 깔끔하게 유지하려 한다.', en: 'I always try to keep my hairstyle neat and tidy.' }, value: 'neatHair', styles: ['cleanBoy'] as StyleType[] },
-            { text: { ko: '나는 꾸며진 느낌보다 자연스럽다는 말을 듣는 게 좋다.', en: 'I prefer being called natural rather than styled.' }, value: 'naturalLook', styles: ['naturalBoy'] as StyleType[] }
-          ]
-        };
-      } else if (q4 === 'pastelColor' || q4 === 'darkColor') {
-        return {
-          title: { ko: '나의 헤어와 메이크업 선호는?', en: 'What is my hair and makeup preference?' },
-          options: [
-            { text: { ko: '나는 자연스러운 헤어와 내추럴 메이크업을 선호한다.', en: 'I prefer natural hair and natural makeup.' }, value: 'natural', styles: ['softBoy'] as StyleType[] },
-            { text: { ko: '나는 브라운, 다크 그린, 네이비 같은 컬러가 잘 어울린다.', en: 'Colors like brown, dark green, navy suit me well.' }, value: 'darkTone', styles: ['darkAcademiaBoy'] as StyleType[] }
-          ]
-        };
-      } else if (q4 === 'trendCheck' || q4 === 'smoky') {
-        return {
-          title: { ko: '나의 성격 특징은?', en: 'What is my personality trait?' },
-          options: [
-            { text: { ko: '나는 자유롭고 즉흥적인 성격이라는 말을 자주 듣는다.', en: 'I often hear I have a free and spontaneous personality.' }, value: 'free', styles: ['streetBoy'] as StyleType[] },
-            { text: { ko: '나는 반항적이지만 진심이 느껴지는 사람으로 보이고 싶다.', en: 'I want to be seen as rebellious but sincere.' }, value: 'rebel', styles: ['rockBoy'] as StyleType[] }
-          ]
-        };
-      } else {
-        return {
-          title: { ko: '나의 스타일 철학은?', en: 'What is my style philosophy?' },
-          options: [
-            { text: { ko: '정제된 언행과 깔끔한 스타일이 나의 매력이라고 생각한다.', en: 'I think refined behavior and neat style are my charm.' }, value: 'refined', styles: ['gentleBoy'] as StyleType[] },
-            { text: { ko: '나는 심플하지만 스마트한 사람이라는 인상을 주고 싶다.', en: 'I want to give an impression of simple but smart.' }, value: 'smart', styles: ['techBoy'] as StyleType[] }
-          ]
-        };
-      }
-    }
-    
     // 남성 질문 6 (step 7) - 최종
     if (currentStep === 7) {
-      const q5 = prev[4];
-      if (q5 === 'neatHair' || q5 === 'naturalLook') {
+      const q3 = prev[2];
+      if (q3 === 'minimal3') {
+        // 미니멀: 클린 vs 내츄럴
         return {
           title: { ko: '나는 어떤 사람으로 기억되고 싶은가?', en: 'How do I want to be remembered?' },
           options: [
@@ -207,7 +198,8 @@ export default function QuestionFlow() {
             { text: { ko: '패션은 나를 돋보이게 하기보다 조화롭게 스며드는 것이 중요하다고 생각한다.', en: 'I think fashion should blend harmoniously rather than stand out.' }, value: 'harmony', styles: ['naturalBoy'] as StyleType[] }
           ]
         };
-      } else if (q5 === 'natural' || q5 === 'darkTone') {
+      } else if (q3 === 'emotional3') {
+        // 감성: 소프트 vs 다크
         return {
           title: { ko: '나는 어떤 사람으로 기억되고 싶은가?', en: 'How do I want to be remembered?' },
           options: [
@@ -215,7 +207,8 @@ export default function QuestionFlow() {
             { text: { ko: '나는 감정보다는 깊이 있는 분위기로 사람들에게 기억되고 싶다.', en: 'I want to be remembered for deep atmosphere rather than emotion.' }, value: 'deep', styles: ['darkAcademiaBoy'] as StyleType[] }
           ]
         };
-      } else if (q5 === 'free' || q5 === 'rebel') {
+      } else if (q3 === 'metal') {
+        // 하이에너지: 스트릿 vs 락
         return {
           title: { ko: '나는 어떤 사람으로 기억되고 싶은가?', en: 'How do I want to be remembered?' },
           options: [
@@ -224,11 +217,12 @@ export default function QuestionFlow() {
           ]
         };
       } else {
+        // 하이컨트롤: 젠틀 vs 테크
         return {
           title: { ko: '나는 어떤 사람으로 기억되고 싶은가?', en: 'How do I want to be remembered?' },
           options: [
-            { text: { ko: '정제된 언행과 깔끔한 스타일이 나의 매력이라고 생각한다.', en: 'I think refined behavior and neat style are my charm.' }, value: 'refinedFinal', styles: ['gentleBoy'] as StyleType[] },
-            { text: { ko: '나는 심플하지만 스마트한 사람이라는 인상을 주고 싶다.', en: 'I want to give an impression of simple but smart.' }, value: 'smartFinal', styles: ['techBoy'] as StyleType[] }
+            { text: { ko: '정제된 언행과 깔끔한 스타일이 나의 매력이라고 생각한다.', en: 'I think refined behavior and neat style are my charm.' }, value: 'refined', styles: ['gentleBoy'] as StyleType[] },
+            { text: { ko: '나는 심플하지만 스마트한 사람이라는 인상을 주고 싶다.', en: 'I want to give an impression of simple but smart.' }, value: 'smart', styles: ['techBoy'] as StyleType[] }
           ]
         };
       }
