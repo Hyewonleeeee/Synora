@@ -26,7 +26,6 @@ export default function QuestionFlow() {
   const [step, setStep] = useState(0);
   const [age, setAge] = useState('');
   const [gender, setGender] = useState('');
-  const [mbti, setMbti] = useState('');
   const [selections, setSelections] = useState<string[]>([]);
   const [scores, setScores] = useState<Scores>({
     // 여성
@@ -47,8 +46,8 @@ export default function QuestionFlow() {
   };
 
   const getMaleQuestion = (currentStep: number, prev: string[]) => {
-    // 남성 질문 1 (step 2)
-    if (currentStep === 2) {
+    // 남성 질문 1 (step 1)
+    if (currentStep === 1) {
       return {
         title: { ko: '나는 사람들에게 어떤 인상을 남기고 싶은가?', en: 'What impression do I want to leave on people?' },
         options: [
@@ -58,8 +57,8 @@ export default function QuestionFlow() {
       };
     }
     
-    // 남성 질문 2 (step 3)
-    if (currentStep === 3) {
+    // 남성 질문 2 (step 2)
+    if (currentStep === 2) {
       if (prev[0] === 'nonTeto') {
         return {
           title: { ko: '나의 스타일 성향은?', en: 'What is my style tendency?' },
@@ -79,8 +78,8 @@ export default function QuestionFlow() {
       }
     }
     
-    // 남성 질문 3 (step 4)
-    if (currentStep === 4) {
+    // 남성 질문 3 (step 3)
+    if (currentStep === 3) {
       if (prev[0] === 'nonTeto') {
         // 논테토: 질문2와 무관하게 다시 선택
         return {
@@ -102,8 +101,8 @@ export default function QuestionFlow() {
       }
     }
     
-    // 남성 질문 4 (step 5) - 질문3 결과에 따라 분기
-    if (currentStep === 5) {
+    // 남성 질문 4 (step 4) - 질문3 결과에 따라 분기
+    if (currentStep === 4) {
       const q3 = prev[2];
       if (q3 === 'minimal3') {
         // 미니멀: 클린 vs 내츄럴
@@ -144,8 +143,8 @@ export default function QuestionFlow() {
       }
     }
     
-    // 남성 질문 5 (step 6)
-    if (currentStep === 6) {
+    // 남성 질문 5 (step 5)
+    if (currentStep === 5) {
       const q3 = prev[2];
       if (q3 === 'minimal3') {
         // 미니멀: 클린 vs 내츄럴
@@ -186,8 +185,8 @@ export default function QuestionFlow() {
       }
     }
     
-    // 남성 질문 6 (step 7) - 최종
-    if (currentStep === 7) {
+    // 남성 질문 6 (step 6) - 최종
+    if (currentStep === 6) {
       const q3 = prev[2];
       if (q3 === 'minimal3') {
         // 미니멀: 클린 vs 내츄럴
@@ -244,7 +243,7 @@ export default function QuestionFlow() {
     console.log('After addScore - new selections:', newSelections);
     
     // 특별 분기: 질문 5-3에서 아쿠비 선택 시 테토로 전환
-    if (step === 6 && value === 'acubiSwitch') {
+    if (step === 5 && value === 'acubiSwitch') {
       // 테토의 질문 1,2를 이미 통과한 것으로 간주
       // 질문 0: teto 선택
       // 질문 1: artistic 선택 (아쿠비 포함)
@@ -252,12 +251,12 @@ export default function QuestionFlow() {
       setSelections(tetoSelections);
       addScore(['acubi', 'mobWife', 'rockstar', 'vampire', 'bossBabe']); // 테토 질문 1
       addScore(['vampire', 'rockstar', 'acubi']); // 테토 질문 2
-      setStep(4); // 테토 질문 3으로 이동
+      setStep(3); // 테토 질문 3으로 이동
       return;
     }
     
-    // 남성은 7단계(질문 6개), 여성은 9단계(질문 8개)
-    const maxStep = gender === 'male' ? 7 : 9;
+    // 남성은 6단계(질문 6개), 여성은 8단계(질문 8개)
+    const maxStep = gender === 'male' ? 6 : 8;
     
     console.log('Current step:', step, 'Max step:', maxStep, 'Gender:', gender);
     
@@ -318,7 +317,7 @@ export default function QuestionFlow() {
   };
 
   const getQuestion = () => {
-    if (step < 2) return null;
+    if (step < 1) return null;
     
     const prev = selections;
     
@@ -328,8 +327,8 @@ export default function QuestionFlow() {
     }
     
     // 여성 질문지 (기존)
-    // 질문 1 (step 2)
-    if (step === 2) {
+    // 질문 1 (step 1)
+    if (step === 1) {
       return {
         title: { ko: '나는 어떤 이미지에 더 끌리는가?', en: 'Which image am I more attracted to?' },
         options: [
@@ -339,8 +338,8 @@ export default function QuestionFlow() {
       };
     }
     
-    // 질문 2 (step 3) - 에겐 vs 테토 분기
-    if (step === 3) {
+    // 질문 2 (step 2) - 에겐 vs 테토 분기
+    if (step === 2) {
       if (prev[0] === 'aegen') {
         // 에겐 질문 2
         return {
@@ -362,8 +361,8 @@ export default function QuestionFlow() {
       }
     }
     
-    // 질문 3 (step 4) - 에겐 vs 테토 분기
-    if (step === 4) {
+    // 질문 3 (step 3) - 에겐 vs 테토 분기
+    if (step === 3) {
       if (prev[0] === 'aegen') {
         // 에겐 질문 3
         if (prev[1] === 'clean') {
@@ -395,8 +394,8 @@ export default function QuestionFlow() {
       }
     }
     
-    // 질문 4 (step 5) - 에겐 vs 테토 분기
-    if (step === 5) {
+    // 질문 4 (step 4) - 에겐 vs 테토 분기
+    if (step === 4) {
       const q3 = prev[2];
       
       if (prev[0] === 'aegen') {
@@ -446,8 +445,8 @@ export default function QuestionFlow() {
       }
     }
     
-    // 질문 5 (step 6) - 에겐 vs 테토 분기
-    if (step === 6) {
+    // 질문 5 (step 5) - 에겐 vs 테토 분기
+    if (step === 5) {
       const q4 = prev[3];
       
       if (prev[0] === 'aegen') {
@@ -523,8 +522,8 @@ export default function QuestionFlow() {
       }
     }
     
-    // 질문 6 (step 7) - 에겐 vs 테토 분기
-    if (step === 7) {
+    // 질문 6 (step 6) - 에겐 vs 테토 분기
+    if (step === 6) {
       const q5 = prev[4];
       
       if (prev[0] === 'aegen') {
@@ -592,8 +591,8 @@ export default function QuestionFlow() {
       }
     }
     
-    // 질문 7 (step 8) - 에겐 vs 테토 분기
-    if (step === 8) {
+    // 질문 7 (step 7) - 에겐 vs 테토 분기
+    if (step === 7) {
       const q6 = prev[5];
       
       if (prev[0] === 'aegen') {
@@ -653,8 +652,8 @@ export default function QuestionFlow() {
       }
     }
     
-    // 질문 8 (step 9) - 에겐 vs 테토 분기
-    if (step === 9) {
+    // 질문 8 (step 8) - 에겐 vs 테토 분기
+    if (step === 8) {
       const q7 = prev[6];
       
       if (prev[0] === 'aegen') {
@@ -710,25 +709,26 @@ export default function QuestionFlow() {
   };
 
   const currentQuestion = getQuestion();
-  const isStep0Valid = age !== '' && Number(age) > 0 && gender !== '';
-  const isStep1Valid = mbti !== '';
+  const isStep0Valid = age !== '' && gender !== '';
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 sm:px-0 py-10">
       <div className="rounded-2xl bg-white/80 backdrop-blur ring-1 ring-warmBrown/10 shadow-wood p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white/90 hover:ring-softSage/20">
-        <div className="mb-6">
-          <div className="flex items-center justify-between text-sm opacity-70 mb-2">
-            <span>{t('step')} {step + 1} / {gender === 'male' ? 8 : 10}</span>
-            <span>{Math.round(((step + 1) / (gender === 'male' ? 8 : 10)) * 100)}%</span>
+        {step >= 1 && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between text-sm opacity-70 mb-2">
+              <span>{t('step')} {step} / {gender === 'male' ? 7 : 9}</span>
+              <span>{Math.round(((step) / (gender === 'male' ? 7 : 9)) * 100)}%</span>
+            </div>
+            <div className="h-2 bg-warmBeige/30 rounded-full overflow-hidden">
+              <motion.div 
+                className="h-full bg-forestGreen"
+                animate={{ width: `${((step) / (gender === 'male' ? 7 : 9)) * 100}%` }}
+                transition={{ duration: 0.3 }}
+              />
+            </div>
           </div>
-          <div className="h-2 bg-warmBeige/30 rounded-full overflow-hidden">
-            <motion.div 
-              className="h-full bg-forestGreen"
-              animate={{ width: `${((step + 1) / (gender === 'male' ? 8 : 10)) * 100}%` }}
-              transition={{ duration: 0.3 }}
-            />
-          </div>
-        </div>
+        )}
 
         <AnimatePresence mode="wait">
           <motion.div key={step} variants={fadeVariants} initial="initial" animate="animate" exit="exit">
@@ -737,16 +737,29 @@ export default function QuestionFlow() {
                 <h2 className="text-lg sm:text-xl font-medium mb-6">{t('step1Title')}</h2>
                 <div>
                   <label htmlFor="age" className="block text-sm font-medium">{t('age')}</label>
-                  <input
+                  <select
                     id="age"
-                    type="number"
-                    inputMode="numeric"
-                    min={1}
-                    max={120}
                     value={age}
                     onChange={(e) => setAge(e.target.value)}
                     className="mt-2 w-full rounded-xl border border-softSage/35 bg-white px-3 py-2 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-softSage transition-all duration-200 hover:border-softSage/50 hover:shadow-md"
-                  />
+                  >
+                    <option value="" disabled>{t('select')}</option>
+                    <option value="10대 초반">10대 초반</option>
+                    <option value="10대 중반">10대 중반</option>
+                    <option value="10대 후반">10대 후반</option>
+                    <option value="20대 초반">20대 초반</option>
+                    <option value="20대 중반">20대 중반</option>
+                    <option value="20대 후반">20대 후반</option>
+                    <option value="30대 초반">30대 초반</option>
+                    <option value="30대 중반">30대 중반</option>
+                    <option value="30대 후반">30대 후반</option>
+                    <option value="40대 초반">40대 초반</option>
+                    <option value="40대 중반">40대 중반</option>
+                    <option value="40대 후반">40대 후반</option>
+                    <option value="50대 초반">50대 초반</option>
+                    <option value="50대 중반">50대 중반</option>
+                    <option value="50대 후반">50대 후반</option>
+                  </select>
                 </div>
                 <div>
                   <fieldset>
@@ -784,38 +797,8 @@ export default function QuestionFlow() {
               </div>
             )}
 
-            {step === 1 && (
-              <div>
-                <h2 className="text-lg sm:text-xl font-medium mb-6">{t('step2Title')}</h2>
-                <label htmlFor="mbti" className="block text-sm font-medium">{t('mbti')}</label>
-                <select
-                  id="mbti"
-                  value={mbti}
-                  onChange={(e) => setMbti(e.target.value)}
-                  className="mt-2 w-full rounded-xl border border-softSage/35 bg-white px-3 py-2 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-softSage transition-all duration-200 hover:border-softSage/50 hover:shadow-md"
-                >
-                  <option value="" disabled>{t('select')}</option>
-                  {['INTJ','INTP','ENTJ','ENTP','INFJ','INFP','ENFJ','ENFP','ISTJ','ISFJ','ESTJ','ESFJ','ISTP','ISFP','ESTP','ESFP'].map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-                <div className="mt-6 flex items-center justify-between">
-                  <button type="button" onClick={() => setStep(0)} className="text-sm opacity-70 hover:opacity-100 transition">
-                    {t('back')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setStep(2)}
-                    disabled={!isStep1Valid}
-                    className="inline-flex items-center justify-center rounded-xl bg-forestGreen text-lightMint px-5 py-2 text-sm font-medium shadow-soft enabled:hover:scale-[1.01] transition disabled:opacity-50"
-                  >
-                    {t('next')}
-                  </button>
-                </div>
-              </div>
-            )}
 
-            {step >= 2 && currentQuestion && (
+            {step >= 1 && currentQuestion && (
               <>
                 <h3 className="text-base sm:text-lg font-medium mb-6 text-forestGreen">
                   {currentQuestion.title[lang]}
