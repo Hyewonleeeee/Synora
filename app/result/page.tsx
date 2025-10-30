@@ -3,12 +3,13 @@
 import { useSearchParams } from 'next/navigation';
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import Link from 'next/link';
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 
 function ResultContent() {
   const searchParams = useSearchParams();
   const style = searchParams.get('style');
   const { lang } = useLanguage();
+  // NOTE: native scroll-snap으로 전환하여 커스텀 스크롤 상태 불필요
 
   const styleNames: Record<string, { ko: string; en: string }> = {
     // 여성
@@ -35,34 +36,147 @@ function ResultContent() {
     techBoy: { ko: '테크 보이', en: 'Tech Boy' },
   };
 
+  const fragranceData: Record<string, { name: string; koreanName: string; description: string }[]> = {
+    // 여성
+    cleanGirl: [
+      { name: 'LILY OWEN', koreanName: '릴리 오웬', description: '봄비에 젖어 흐르는 꽃잎들.' },
+      { name: 'TOIT VERT', koreanName: '트와 베르', description: '수분기 가득한 식물원의 공기.' },
+    ],
+    softGirl: [
+      { name: 'SUSIE SALMON', koreanName: '수지살몬', description: '달콤한 과일을 먹은 뒤 낮잠.' },
+      { name: 'WEGENER', koreanName: '베게너', description: '화려한 색감의 생화로 만든 꽃다발.' },
+    ],
+    lightAcademia: [
+      { name: 'MARINE ORCHID', koreanName: '마린 오키드', description: '인적이 드문 해안도로에서의 드라이빙.' },
+      { name: 'KYUJANG', koreanName: '규장', description: '오래된 종이에서 느껴지는 시간의 향.' },
+    ],
+    darkAcademia: [
+      { name: 'KYUJANG', koreanName: '규장', description: '오래된 종이에서 느껴지는 시간의 향.' },
+      { name: 'VIOLETTE', koreanName: '비올레뜨', description: '가을 달빛을 머금은 보라꽃.' },
+    ],
+    balletcore: [
+      { name: 'WEGENER', koreanName: '베게너', description: '화려한 색감의 생화로 만든 꽃다발.' },
+      { name: 'SUSIE SALMON', koreanName: '수지살몬', description: '달콤한 과일을 먹은 뒤 낮잠.' },
+    ],
+    moriGirl: [
+      { name: 'LUCIEN CARR', koreanName: '루시엔 카', description: '안개 낀 소나무 숲에서의 산책.' },
+      { name: 'SUSIE SALMON', koreanName: '수지살몬', description: '달콤한 과일을 먹은 뒤 낮잠.' },
+    ],
+    mobWife: [
+      { name: 'VIOLETTE', koreanName: '비올레뜨', description: '가을 달빛을 머금은 보라꽃.' },
+      { name: 'WEGENER', koreanName: '베게너', description: '화려한 색감의 생화로 만든 꽃다발.' },
+    ],
+    acubi: [
+      { name: 'KYUJANG', koreanName: '규장', description: '오래된 종이에서 느껴지는 시간의 향.' },
+      { name: 'ROLAND', koreanName: '롤랑', description: '도망쳐 온 낙원의 풍경.' },
+    ],
+    rockstar: [
+      { name: 'ROLAND', koreanName: '롤랑', description: '도망쳐 온 낙원의 풍경.' },
+      { name: 'MARINE ORCHID', koreanName: '마린 오키드', description: '인적이 드문 해안도로에서의 드라이빙.' },
+    ],
+    vampire: [
+      { name: 'VIOLETTE', koreanName: '비올레뜨', description: '가을 달빛을 머금은 보라꽃.' },
+      { name: 'LUCIEN CARR', koreanName: '루시엔 카', description: '안개 낀 소나무 숲에서의 산책.' },
+    ],
+    bossBabe: [
+      { name: 'WEGENER', koreanName: '베게너', description: '화려한 색감의 생화로 만든 꽃다발.' },
+      { name: 'TOIT VERT', koreanName: '트와 베르', description: '수분기 가득한 식물원의 공기.' },
+    ],
+    // 남성
+    cleanBoy: [
+      { name: 'TOIT VERT', koreanName: '트와 베르', description: '수분기 가득한 식물원의 공기.' },
+      { name: 'MARINE ORCHID', koreanName: '마린 오키드', description: '인적이 드문 해안도로에서의 드라이빙.' },
+    ],
+    softBoy: [
+      { name: 'TOIT VERT', koreanName: '트와 베르', description: '수분기 가득한 식물원의 공기.' },
+      { name: 'LUCIEN CARR', koreanName: '루시엔 카', description: '안개 낀 소나무 숲에서의 산책.' },
+    ],
+    darkAcademiaBoy: [
+      { name: 'KYUJANG', koreanName: '규장', description: '오래된 종이에서 느껴지는 시간의 향.' },
+      { name: 'VIOLETTE', koreanName: '비올레뜨', description: '가을 달빛을 머금은 보라꽃.' },
+    ],
+    naturalBoy: [
+      { name: 'LUCIEN CARR', koreanName: '루시엔 카', description: '안개 낀 소나무 숲에서의 산책.' },
+      { name: 'TOIT VERT', koreanName: '트와 베르', description: '수분기 가득한 식물원의 공기.' },
+    ],
+    streetBoy: [
+      { name: 'MARINE ORCHID', koreanName: '마린 오키드', description: '인적이 드문 해안도로에서의 드라이빙.' },
+      { name: 'ROLAND', koreanName: '롤랑', description: '도망쳐 온 낙원의 풍경.' },
+    ],
+    rockBoy: [
+      { name: 'ROLAND', koreanName: '롤랑', description: '도망쳐 온 낙원의 풍경.' },
+      { name: 'MARINE ORCHID', koreanName: '마린 오키드', description: '인적이 드문 해안도로에서의 드라이빙.' },
+    ],
+    gentleBoy: [
+      { name: 'VIOLETTE', koreanName: '비올레뜨', description: '가을 달빛을 머금은 보라꽃.' },
+      { name: 'KYUJANG', koreanName: '규장', description: '오래된 종이에서 느껴지는 시간의 향.' },
+    ],
+    techBoy: [
+      { name: 'MARINE ORCHID', koreanName: '마린 오키드', description: '인적이 드문 해안도로에서의 드라이빙.' },
+      { name: 'VIOLETTE', koreanName: '비올레뜨', description: '가을 달빛을 머금은 보라꽃.' },
+    ],
+  };
+
   const styleName = style && styleNames[style as keyof typeof styleNames]
     ? styleNames[style as keyof typeof styleNames][lang]
     : (lang === 'ko' ? '알 수 없음' : 'Unknown');
 
+  const fragrances = style ? fragranceData[style] || [] : [];
+  // scroll-snap 사용으로 추가 핸들러 불필요
+
   return (
-    <main className="min-h-screen flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full">
-        <div className="rounded-2xl bg-white/80 backdrop-blur ring-1 ring-warmBrown/10 shadow-wood p-8 sm:p-12 text-center">
-          <h1 className="text-2xl sm:text-4xl font-semibold mb-4">
-            {lang === 'ko' ? '당신의 추구미는' : 'Your style is'}
-          </h1>
-          <div className="my-8 py-6 px-8 bg-summerBeige/30 rounded-2xl">
-            <p className="text-3xl sm:text-5xl font-bold text-forestGreen">
-              {styleName}
-            </p>
+    <main className="min-h-screen bg-grain">
+      <div className="h-screen overflow-y-auto snap-y snap-mandatory">
+        {/* 첫 번째 페이지: 추구미 결과 */}
+        <div className="min-h-screen flex items-center justify-center p-4 snap-start">
+          <div className="max-w-2xl w-full rounded-2xl bg-white/80 backdrop-blur ring-1 ring-warmBrown/10 shadow-wood p-6 sm:p-8 relative z-10">
+            <div className="text-center mb-6">
+              <h1 className="text-xl sm:text-2xl font-semibold mb-6">
+                {lang === 'ko' ? '당신의 추구미는' : 'Your style is'}
+              </h1>
+              <div className="bg-summerBeige/30 rounded-xl py-4 px-6 inline-block">
+                <p className="text-2xl sm:text-3xl font-bold text-forestGreen">
+                  {styleName}
+                </p>
+              </div>
+            </div>
+            
+            <div className="text-center">
+              <Link
+                href="/"
+                className="inline-flex items-center justify-center rounded-xl bg-forestGreen text-lightMint px-6 py-2.5 text-sm font-medium shadow-soft transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-softSage"
+              >
+                {lang === 'ko' ? '홈으로 돌아가기' : 'Back to Home'}
+              </Link>
+            </div>
           </div>
-          <p className="text-base sm:text-lg opacity-80 mb-8">
-            {lang === 'ko' 
-              ? '추천 향수는 곧 업데이트될 예정입니다.' 
-              : 'Recommended fragrances will be updated soon.'}
-          </p>
-          <Link
-            href="/"
-            className="inline-flex items-center justify-center rounded-2xl bg-forestGreen text-lightMint px-8 py-3 text-base font-medium shadow-soft transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-softSage"
-          >
-            {lang === 'ko' ? '홈으로 돌아가기' : 'Back to Home'}
-          </Link>
         </div>
+
+        {/* 향수 페이지들 */}
+        {fragrances.map((fragrance, idx) => {
+          const imageName = fragrance.koreanName.replace(/\s/g, '');
+          const imagePath = `/jpg/${imageName}.jpg`;
+          
+          return (
+            <div
+              key={idx}
+              className={`min-h-screen flex items-center justify-center p-4 snap-start ${idx > 0 ? '-mt-16' : ''}`}
+            >
+              <div className="max-w-4xl w-full rounded-2xl bg-white/80 backdrop-blur ring-2 ring-forestGreen shadow-wood overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:ring-forestGreen/80 cursor-pointer">
+                <div className="px-5 py-4 text-center">
+                  <p className="text-lg sm:text-2xl font-semibold text-forestGreen">
+                    {lang === 'ko' ? `추천 향수 ${idx + 1}.` : `Recommendation ${idx + 1}.`}
+                  </p>
+                </div>
+                <img 
+                  src={imagePath} 
+                  alt={fragrance.koreanName}
+                  className="w-full h-[78vh] object-contain"
+                />
+              </div>
+            </div>
+          );
+        })}
       </div>
     </main>
   );
