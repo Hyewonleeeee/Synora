@@ -158,7 +158,7 @@ function ResultContent() {
         {/* 향수 페이지들 */}
         {fragrances.map((fragrance, idx) => {
           const imageName = fragrance.name;
-          const imagePath = `/jpg/${imageName}.jpg`;
+          const imagePath = `jpg/${imageName}.jpg`;
           
           return (
             <div
