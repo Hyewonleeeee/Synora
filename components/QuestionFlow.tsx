@@ -767,7 +767,7 @@ export default function QuestionFlow() {
                     id="age"
                     value={age}
                     onChange={(e) => setAge(e.target.value)}
-                    className="mt-2 w-full rounded-xl border border-softSage/35 bg-white px-3 py-2 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-softSage transition-all duration-200 hover:border-softSage/50 hover:shadow-md"
+                    className="mt-2 w-full h-11 rounded-xl border border-softSage/35 bg-white px-3 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-softSage transition-all duration-200 hover:border-softSage/50 hover:shadow-md"
                   >
                     <option value="" disabled>{t('select')}</option>
                     <option value="10대">10대</option>
@@ -821,7 +821,7 @@ export default function QuestionFlow() {
                   id="mbti"
                   value={mbti}
                   onChange={(e) => setMbti(e.target.value)}
-                  className="mt-2 w-full rounded-xl border border-softSage/35 bg-white px-3 py-2 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-softSage transition-all duration-200 hover:border-softSage/50 hover:shadow-md"
+                  className="mt-2 w-full h-11 rounded-xl border border-softSage/35 bg-white px-3 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-softSage transition-all duration-200 hover:border-softSage/50 hover:shadow-md"
                 >
                   <option value="" disabled>{t('select')}</option>
                   <option value="선택안함">선택안함</option>
