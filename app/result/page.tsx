@@ -39,81 +39,81 @@ function ResultContent() {
   const fragranceData: Record<string, { name: string; koreanName: string; description: string }[]> = {
     // 여성
     cleanGirl: [
-      { name: 'LILY OWEN', koreanName: '릴리 오웬', description: '봄비에 젖어 흐르는 꽃잎들.' },
-      { name: 'TOIT VERT', koreanName: '트와 베르', description: '수분기 가득한 식물원의 공기.' },
+      { name: 'lily_owen', koreanName: '릴리 오웬', description: '봄비에 젖어 흐르는 꽃잎들.' },
+      { name: 'toit_vert', koreanName: '트와 베르', description: '수분기 가득한 식물원의 공기.' },
     ],
     softGirl: [
-      { name: 'SUSIE SALMON', koreanName: '수지살몬', description: '달콤한 과일을 먹은 뒤 낮잠.' },
-      { name: 'WEGENER', koreanName: '베게너', description: '화려한 색감의 생화로 만든 꽃다발.' },
+      { name: 'susie_salmon', koreanName: '수지살몬', description: '달콤한 과일을 먹은 뒤 낮잠.' },
+      { name: 'wegener', koreanName: '베게너', description: '화려한 색감의 생화로 만든 꽃다발.' },
     ],
     lightAcademia: [
-      { name: 'MARINE ORCHID', koreanName: '마린 오키드', description: '인적이 드문 해안도로에서의 드라이빙.' },
-      { name: 'KYUJANG', koreanName: '규장', description: '오래된 종이에서 느껴지는 시간의 향.' },
+      { name: 'marine_orchid', koreanName: '마린 오키드', description: '인적이 드문 해안도로에서의 드라이빙.' },
+      { name: 'kyujang', koreanName: '규장', description: '오래된 종이에서 느껴지는 시간의 향.' },
     ],
     darkAcademia: [
-      { name: 'KYUJANG', koreanName: '규장', description: '오래된 종이에서 느껴지는 시간의 향.' },
-      { name: 'VIOLETTE', koreanName: '비올레뜨', description: '가을 달빛을 머금은 보라꽃.' },
+      { name: 'kyujang', koreanName: '규장', description: '오래된 종이에서 느껴지는 시간의 향.' },
+      { name: 'violette', koreanName: '비올레뜨', description: '가을 달빛을 머금은 보라꽃.' },
     ],
     balletcore: [
-      { name: 'WEGENER', koreanName: '베게너', description: '화려한 색감의 생화로 만든 꽃다발.' },
-      { name: 'SUSIE SALMON', koreanName: '수지살몬', description: '달콤한 과일을 먹은 뒤 낮잠.' },
+      { name: 'wegener', koreanName: '베게너', description: '화려한 색감의 생화로 만든 꽃다발.' },
+      { name: 'susie_salmon', koreanName: '수지살몬', description: '달콤한 과일을 먹은 뒤 낮잠.' },
     ],
     moriGirl: [
-      { name: 'LUCIEN CARR', koreanName: '루시엔 카', description: '안개 낀 소나무 숲에서의 산책.' },
-      { name: 'SUSIE SALMON', koreanName: '수지살몬', description: '달콤한 과일을 먹은 뒤 낮잠.' },
+      { name: 'lucien_carr', koreanName: '루시엔 카', description: '안개 낀 소나무 숲에서의 산책.' },
+      { name: 'susie_salmon', koreanName: '수지살몬', description: '달콤한 과일을 먹은 뒤 낮잠.' },
     ],
     mobWife: [
-      { name: 'VIOLETTE', koreanName: '비올레뜨', description: '가을 달빛을 머금은 보라꽃.' },
-      { name: 'WEGENER', koreanName: '베게너', description: '화려한 색감의 생화로 만든 꽃다발.' },
+      { name: 'violette', koreanName: '비올레뜨', description: '가을 달빛을 머금은 보라꽃.' },
+      { name: 'wegener', koreanName: '베게너', description: '화려한 색감의 생화로 만든 꽃다발.' },
     ],
     acubi: [
-      { name: 'KYUJANG', koreanName: '규장', description: '오래된 종이에서 느껴지는 시간의 향.' },
-      { name: 'ROLAND', koreanName: '롤랑', description: '도망쳐 온 낙원의 풍경.' },
+      { name: 'kyujang', koreanName: '규장', description: '오래된 종이에서 느껴지는 시간의 향.' },
+      { name: 'roland', koreanName: '롤랑', description: '도망쳐 온 낙원의 풍경.' },
     ],
     rockstar: [
-      { name: 'ROLAND', koreanName: '롤랑', description: '도망쳐 온 낙원의 풍경.' },
-      { name: 'MARINE ORCHID', koreanName: '마린 오키드', description: '인적이 드문 해안도로에서의 드라이빙.' },
+      { name: 'roland', koreanName: '롤랑', description: '도망쳐 온 낙원의 풍경.' },
+      { name: 'marine_orchid', koreanName: '마린 오키드', description: '인적이 드문 해안도로에서의 드라이빙.' },
     ],
     vampire: [
-      { name: 'VIOLETTE', koreanName: '비올레뜨', description: '가을 달빛을 머금은 보라꽃.' },
-      { name: 'LUCIEN CARR', koreanName: '루시엔 카', description: '안개 낀 소나무 숲에서의 산책.' },
+      { name: 'violette', koreanName: '비올레뜨', description: '가을 달빛을 머금은 보라꽃.' },
+      { name: 'lucien_carr', koreanName: '루시엔 카', description: '안개 낀 소나무 숲에서의 산책.' },
     ],
     bossBabe: [
-      { name: 'WEGENER', koreanName: '베게너', description: '화려한 색감의 생화로 만든 꽃다발.' },
-      { name: 'TOIT VERT', koreanName: '트와 베르', description: '수분기 가득한 식물원의 공기.' },
+      { name: 'wegener', koreanName: '베게너', description: '화려한 색감의 생화로 만든 꽃다발.' },
+      { name: 'toit_vert', koreanName: '트와 베르', description: '수분기 가득한 식물원의 공기.' },
     ],
     // 남성
     cleanBoy: [
-      { name: 'TOIT VERT', koreanName: '트와 베르', description: '수분기 가득한 식물원의 공기.' },
-      { name: 'MARINE ORCHID', koreanName: '마린 오키드', description: '인적이 드문 해안도로에서의 드라이빙.' },
+      { name: 'toit_vert', koreanName: '트와 베르', description: '수분기 가득한 식물원의 공기.' },
+      { name: 'marine_orchid', koreanName: '마린 오키드', description: '인적이 드문 해안도로에서의 드라이빙.' },
     ],
     softBoy: [
-      { name: 'TOIT VERT', koreanName: '트와 베르', description: '수분기 가득한 식물원의 공기.' },
-      { name: 'LUCIEN CARR', koreanName: '루시엔 카', description: '안개 낀 소나무 숲에서의 산책.' },
+      { name: 'toit_vert', koreanName: '트와 베르', description: '수분기 가득한 식물원의 공기.' },
+      { name: 'lucien_carr', koreanName: '루시엔 카', description: '안개 낀 소나무 숲에서의 산책.' },
     ],
     darkAcademiaBoy: [
-      { name: 'KYUJANG', koreanName: '규장', description: '오래된 종이에서 느껴지는 시간의 향.' },
-      { name: 'VIOLETTE', koreanName: '비올레뜨', description: '가을 달빛을 머금은 보라꽃.' },
+      { name: 'kyujang', koreanName: '규장', description: '오래된 종이에서 느껴지는 시간의 향.' },
+      { name: 'violette', koreanName: '비올레뜨', description: '가을 달빛을 머금은 보라꽃.' },
     ],
     naturalBoy: [
-      { name: 'LUCIEN CARR', koreanName: '루시엔 카', description: '안개 낀 소나무 숲에서의 산책.' },
-      { name: 'TOIT VERT', koreanName: '트와 베르', description: '수분기 가득한 식물원의 공기.' },
+      { name: 'lucien_carr', koreanName: '루시엔 카', description: '안개 낀 소나무 숲에서의 산책.' },
+      { name: 'toit_vert', koreanName: '트와 베르', description: '수분기 가득한 식물원의 공기.' },
     ],
     streetBoy: [
-      { name: 'MARINE ORCHID', koreanName: '마린 오키드', description: '인적이 드문 해안도로에서의 드라이빙.' },
-      { name: 'ROLAND', koreanName: '롤랑', description: '도망쳐 온 낙원의 풍경.' },
+      { name: 'marine_orchid', koreanName: '마린 오키드', description: '인적이 드문 해안도로에서의 드라이빙.' },
+      { name: 'roland', koreanName: '롤랑', description: '도망쳐 온 낙원의 풍경.' },
     ],
     rockBoy: [
-      { name: 'ROLAND', koreanName: '롤랑', description: '도망쳐 온 낙원의 풍경.' },
-      { name: 'MARINE ORCHID', koreanName: '마린 오키드', description: '인적이 드문 해안도로에서의 드라이빙.' },
+      { name: 'roland', koreanName: '롤랑', description: '도망쳐 온 낙원의 풍경.' },
+      { name: 'marine_orchid', koreanName: '마린 오키드', description: '인적이 드문 해안도로에서의 드라이빙.' },
     ],
     gentleBoy: [
-      { name: 'VIOLETTE', koreanName: '비올레뜨', description: '가을 달빛을 머금은 보라꽃.' },
-      { name: 'KYUJANG', koreanName: '규장', description: '오래된 종이에서 느껴지는 시간의 향.' },
+      { name: 'violette', koreanName: '비올레뜨', description: '가을 달빛을 머금은 보라꽃.' },
+      { name: 'kyujang', koreanName: '규장', description: '오래된 종이에서 느껴지는 시간의 향.' },
     ],
     techBoy: [
-      { name: 'MARINE ORCHID', koreanName: '마린 오키드', description: '인적이 드문 해안도로에서의 드라이빙.' },
-      { name: 'VIOLETTE', koreanName: '비올레뜨', description: '가을 달빛을 머금은 보라꽃.' },
+      { name: 'marine_orchid', koreanName: '마린 오키드', description: '인적이 드문 해안도로에서의 드라이빙.' },
+      { name: 'violette', koreanName: '비올레뜨', description: '가을 달빛을 머금은 보라꽃.' },
     ],
   };
 
