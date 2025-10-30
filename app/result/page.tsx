@@ -139,6 +139,9 @@ function ResultContent() {
                   {styleName}
                 </p>
               </div>
+              <p className="text-xs sm:text-sm text-forestGreen opacity-70 mt-6">
+                {lang === 'ko' ? '아래로 스크롤하여 추천 향수를 확인해 보세요.' : 'Scroll down to see recommended fragrances.'}
+              </p>
             </div>
             
             <div className="text-center">
@@ -162,17 +165,19 @@ function ResultContent() {
               key={idx}
               className={`min-h-screen flex items-center justify-center p-4 snap-start ${idx > 0 ? '-mt-16' : ''}`}
             >
-              <div className="max-w-4xl w-full rounded-2xl bg-white/80 backdrop-blur ring-2 ring-forestGreen shadow-wood overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:ring-forestGreen/80 cursor-pointer">
-                <div className="px-5 py-4 text-center">
+              <div className="max-w-4xl w-full rounded-[2.5rem] bg-gradient-to-br from-white/90 to-summerBeige/40 backdrop-blur shadow-[0_20px_60px_rgba(76,130,100,0.15)] overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_30px_80px_rgba(76,130,100,0.25)] cursor-pointer border-4 border-forestGreen/30 hover:border-forestGreen/50">
+                <div className="px-6 py-5 text-center">
                   <p className="text-lg sm:text-2xl font-semibold text-forestGreen">
                     {lang === 'ko' ? `추천 향수 ${idx + 1}.` : `Recommendation ${idx + 1}.`}
                   </p>
                 </div>
-                <img 
-                  src={imagePath} 
-                  alt={fragrance.koreanName}
-                  className="w-full h-[78vh] object-contain"
-                />
+                <div className="p-6">
+                  <img 
+                    src={imagePath} 
+                    alt={fragrance.koreanName}
+                    className="w-full h-[78vh] object-contain rounded-3xl drop-shadow-[0_10px_30px_rgba(0,0,0,0.1)]"
+                  />
+                </div>
               </div>
             </div>
           );
