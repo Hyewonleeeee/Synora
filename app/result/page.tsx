@@ -175,7 +175,7 @@ function ResultContent() {
                   <img 
                     src={imagePath} 
                     alt={fragrance.koreanName}
-                    className="w-full h-[78vh] object-contain rounded-3xl drop-shadow-[0_10px_30px_rgba(0,0,0,0.1)]"
+                    className="w-full h-auto max-h-[60vh] sm:h-[78vh] object-contain rounded-3xl drop-shadow-[0_10px_30px_rgba(0,0,0,0.1)] mx-auto"
                   />
                 </div>
               </div>
