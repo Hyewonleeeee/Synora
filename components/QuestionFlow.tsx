@@ -323,7 +323,7 @@ export default function QuestionFlow() {
         clearInterval(dotTimer);
         setIsCalculating(false);
         router.push(`/result?style=${result}`);
-      }, 4000);
+      }, 3000);
       // 안전장치: 컴포넌트 언마운트 대비
       void elapsedMs;
     } else {
