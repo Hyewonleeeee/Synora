@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import { useRouter } from 'next/navigation';
@@ -19,6 +19,599 @@ const fadeVariants = {
   exit: { opacity: 0, y: -8, transition: { duration: 0.12 } },
 };
 
+// Linked List 방식 질문 데이터 구조
+type QuestionOption = {
+  text: { ko: string; en: string };
+  nextQuestionId: string;
+  scoreKeywords: StyleType[];
+};
+
+type Question = {
+  id: string;
+  title: { ko: string; en: string };
+  options: QuestionOption[];
+};
+
+// 여성 에겐 그룹 질문 데이터
+const femaleAegenQuestions: Record<string, Question> = {
+  q1_start: {
+    id: 'q1_start',
+    title: { ko: '첫만남에 당신이 보여주고픈 이미지는 무엇인가요?', en: 'What image do you want to show on first meeting?' },
+    options: [
+      { text: { ko: '단아하고 깨끗한 이미지', en: 'Elegant and clean image' }, nextQuestionId: 'q2_vibe_egen', scoreKeywords: ['cleanGirl', 'softGirl', 'lightAcademia', 'darkAcademia', 'balletcore', 'moriGirl'] },
+      { text: { ko: '시크하고 도도한 이미지', en: 'Chic and aloof image' }, nextQuestionId: 'q2_vibe_teto', scoreKeywords: ['acubi', 'mobWife', 'rockstar', 'vampire', 'bossBabe'] },
+    ],
+  },
+  q2_vibe_egen: {
+    id: 'q2_vibe_egen',
+    title: { ko: '당신이 원하는 전체적인 분위기는 무엇인가요?', en: 'What overall atmosphere do you want?' },
+    options: [
+      { text: { ko: '지적이고 세련된 분위기', en: 'Intellectual and sophisticated atmosphere' }, nextQuestionId: 'q3_color_intellectual', scoreKeywords: ['cleanGirl', 'lightAcademia', 'darkAcademia', 'balletcore'] },
+      { text: { ko: '편안하고 따뜻한 분위기', en: 'Comfortable and warm atmosphere' }, nextQuestionId: 'q3_color_warm', scoreKeywords: ['softGirl', 'moriGirl'] },
+    ],
+  },
+  q3_color_intellectual: {
+    id: 'q3_color_intellectual',
+    title: { ko: '어떤 색감의 패션이 더 마음에 드나요?', en: 'Which color palette of fashion do you like more?' },
+    options: [
+      { text: { ko: '화이트, 아이보리 등의 뉴트럴 톤', en: 'Neutral tones like white and ivory' }, nextQuestionId: 'q4_makeup_neutral', scoreKeywords: ['cleanGirl', 'lightAcademia', 'balletcore'] },
+      { text: { ko: '브라운, 딥 그린 등의 딥 톤', en: 'Deep tones like brown and deep green' }, nextQuestionId: 'q4_makeup_dark', scoreKeywords: ['darkAcademia'] },
+    ],
+  },
+  q3_color_warm: {
+    id: 'q3_color_warm',
+    title: { ko: '어떤 색감의 패션이 더 마음에 드나요?', en: 'Which color palette of fashion do you like more?' },
+    options: [
+      { text: { ko: '핑크, 라벤더 등의 파스텔 톤', en: 'Pastel tones like pink and lavender' }, nextQuestionId: 'q4_makeup_pastel', scoreKeywords: ['softGirl'] },
+      { text: { ko: '베이지, 올리브 등의 어스 톤', en: 'Earth tones like beige and olive' }, nextQuestionId: 'q4_makeup_earth', scoreKeywords: ['moriGirl'] },
+    ],
+  },
+  q4_makeup_neutral: {
+    id: 'q4_makeup_neutral',
+    title: { ko: '당신은 어떤 메이크업을 더 선호하나요?', en: 'What makeup do you prefer more?' },
+    options: [
+      { text: { ko: '광채 나는 투명 피부와 글로시한 입술', en: 'Glowing transparent skin and glossy lips' }, nextQuestionId: 'q5_style_glow', scoreKeywords: ['cleanGirl', 'balletcore'] },
+      { text: { ko: '보송한 피부와 MLBB 컬러의 입술', en: 'Soft skin and MLBB color lips' }, nextQuestionId: 'q5_style_matte_light', scoreKeywords: ['lightAcademia'] },
+    ],
+  },
+  q4_makeup_dark: {
+    id: 'q4_makeup_dark',
+    title: { ko: '당신은 어떤 메이크업을 더 선호하나요?', en: 'What makeup do you prefer more?' },
+    options: [
+      { text: { ko: '광채 나는 투명 피부와 글로시한 입술', en: 'Glowing transparent skin and glossy lips' }, nextQuestionId: 'q5_style_glow_dark', scoreKeywords: ['cleanGirl', 'balletcore'] },
+      { text: { ko: '보송한 피부와 채도 낮은 뮤트 톤의 입술', en: 'Soft skin and low saturation mute tone lips' }, nextQuestionId: 'q5_style_matte_dark', scoreKeywords: ['darkAcademia'] },
+    ],
+  },
+  q4_makeup_pastel: {
+    id: 'q4_makeup_pastel',
+    title: { ko: '당신은 어떤 메이크업을 더 선호하나요?', en: 'What makeup do you prefer more?' },
+    options: [
+      { text: { ko: '핑크빛 블러셔에 글로시한 입술', en: 'Pink blush with glossy lips' }, nextQuestionId: 'q5_style_soft', scoreKeywords: ['softGirl'] },
+      { text: { ko: '본연의 내추럴한 피부와 가벼운 컬러 립밤', en: 'Natural skin and light color lip balm' }, nextQuestionId: 'q5_style_mori', scoreKeywords: ['moriGirl'] },
+    ],
+  },
+  q4_makeup_earth: {
+    id: 'q4_makeup_earth',
+    title: { ko: '당신은 어떤 메이크업을 더 선호하나요?', en: 'What makeup do you prefer more?' },
+    options: [
+      { text: { ko: '핑크빛 블러셔에 글로시한 입술', en: 'Pink blush with glossy lips' }, nextQuestionId: 'q5_style_soft', scoreKeywords: ['softGirl'] },
+      { text: { ko: '본연의 내추럴한 피부와 가벼운 컬러 립밤', en: 'Natural skin and light color lip balm' }, nextQuestionId: 'q5_style_mori', scoreKeywords: ['moriGirl'] },
+    ],
+  },
+  q5_style_glow: {
+    id: 'q5_style_glow',
+    title: { ko: '당신은 어떤 스타일에 더 편안함을 느끼나요?', en: 'Which style makes you feel more comfortable?' },
+    options: [
+      { text: { ko: '화이트 셔츠와 블랙 스커트의 미니멀 룩', en: 'Minimal look of white shirt and black skirt' }, nextQuestionId: 'q6_hair_cvb', scoreKeywords: ['cleanGirl'] },
+      { text: { ko: '리본, 타이츠 등의 발레웨어 스타일', en: 'Balletwear style with ribbon and tights' }, nextQuestionId: 'q6_hair_cvb', scoreKeywords: ['balletcore'] },
+    ],
+  },
+  q5_style_matte_light: {
+    id: 'q5_style_matte_light',
+    title: { ko: '당신은 어떤 스타일에 더 편안함을 느끼나요?', en: 'Which style makes you feel more comfortable?' },
+    options: [
+      { text: { ko: '화이트 셔츠와 블랙 스커트의 미니멀 룩', en: 'Minimal look of white shirt and black skirt' }, nextQuestionId: 'q6_hair_cvl', scoreKeywords: ['cleanGirl'] },
+      { text: { ko: '아이보리 니트와 플리츠 스커트의 클래식 룩', en: 'Classic look of ivory knit and pleated skirt' }, nextQuestionId: 'q6_hair_cvl', scoreKeywords: ['lightAcademia'] },
+    ],
+  },
+  q5_style_glow_dark: {
+    id: 'q5_style_glow_dark',
+    title: { ko: '당신은 어떤 스타일에 더 편안함을 느끼나요?', en: 'Which style makes you feel more comfortable?' },
+    options: [
+      { text: { ko: '화이트 셔츠와 블랙 스커트의 미니멀 룩', en: 'Minimal look of white shirt and black skirt' }, nextQuestionId: 'q6_hair_cvd', scoreKeywords: ['cleanGirl'] },
+      { text: { ko: '트렌치 코트와 롱 스커트의 프렌치 시크 룩', en: 'French chic look of trench coat and long skirt' }, nextQuestionId: 'q6_hair_cvd', scoreKeywords: ['darkAcademia'] },
+    ],
+  },
+  q5_style_matte_dark: {
+    id: 'q5_style_matte_dark',
+    title: { ko: '당신은 어떤 스타일에 더 편안함을 느끼나요?', en: 'Which style makes you feel more comfortable?' },
+    options: [
+      { text: { ko: '화이트 셔츠와 블랙 스커트의 미니멀 룩', en: 'Minimal look of white shirt and black skirt' }, nextQuestionId: 'q6_hair_cvd', scoreKeywords: ['cleanGirl'] },
+      { text: { ko: '트렌치 코트와 롱 스커트의 프렌치 시크 룩', en: 'French chic look of trench coat and long skirt' }, nextQuestionId: 'q6_hair_cvd', scoreKeywords: ['darkAcademia'] },
+    ],
+  },
+  q5_style_soft: {
+    id: 'q5_style_soft',
+    title: { ko: '당신은 어떤 스타일에 더 편안함을 느끼나요?', en: 'Which style makes you feel more comfortable?' },
+    options: [
+      { text: { ko: '리본, 하트 디테일의 니트와 프릴 스커트', en: 'Knit with ribbon and heart details and frill skirt' }, nextQuestionId: 'q6_hair_svm', scoreKeywords: ['softGirl'] },
+      { text: { ko: '부드러운 린넨 원피스와 느슨한 가디건', en: 'Soft linen dress and loose cardigan' }, nextQuestionId: 'q6_hair_svm', scoreKeywords: ['moriGirl'] },
+    ],
+  },
+  q5_style_mori: {
+    id: 'q5_style_mori',
+    title: { ko: '당신은 어떤 스타일에 더 편안함을 느끼나요?', en: 'Which style makes you feel more comfortable?' },
+    options: [
+      { text: { ko: '리본, 하트 디테일의 니트와 프릴 스커트', en: 'Knit with ribbon and heart details and frill skirt' }, nextQuestionId: 'q6_hair_svm', scoreKeywords: ['softGirl'] },
+      { text: { ko: '부드러운 린넨 원피스와 느슨한 가디건', en: 'Soft linen dress and loose cardigan' }, nextQuestionId: 'q6_hair_svm', scoreKeywords: ['moriGirl'] },
+    ],
+  },
+  q6_hair_cvb: {
+    id: 'q6_hair_cvb',
+    title: { ko: '당신은 어떤 헤어 스타일을 더 선호하나요?', en: 'Which hairstyle do you prefer more?' },
+    options: [
+      { text: { ko: '클립을 이용한 올림머리 혹은 올백 스타일', en: 'Updo using clips or slicked back style' }, nextQuestionId: 'q7_bag_cvb', scoreKeywords: ['cleanGirl'] },
+      { text: { ko: '머리망을 이용한 하이 번 혹은 로우 번 스타일', en: 'High bun or low bun style using hair net' }, nextQuestionId: 'q7_bag_cvb', scoreKeywords: ['balletcore'] },
+    ],
+  },
+  q6_hair_cvl: {
+    id: 'q6_hair_cvl',
+    title: { ko: '당신은 어떤 헤어 스타일을 더 선호하나요?', en: 'Which hairstyle do you prefer more?' },
+    options: [
+      { text: { ko: '클립을 이용한 올림머리 혹은 올백 스타일', en: 'Updo using clips or slicked back style' }, nextQuestionId: 'q7_bag_cvl', scoreKeywords: ['cleanGirl'] },
+      { text: { ko: '자연스러운 웨이브나 반 묶음 스타일', en: 'Natural wave or half-up style' }, nextQuestionId: 'q7_bag_cvl', scoreKeywords: ['lightAcademia'] },
+    ],
+  },
+  q6_hair_cvd: {
+    id: 'q6_hair_cvd',
+    title: { ko: '당신은 어떤 헤어 스타일을 더 선호하나요?', en: 'Which hairstyle do you prefer more?' },
+    options: [
+      { text: { ko: '클립을 이용한 올림머리 혹은 올백 스타일', en: 'Updo using clips or slicked back style' }, nextQuestionId: 'q7_bag_cvd', scoreKeywords: ['cleanGirl'] },
+      { text: { ko: '자연스러운 웨이브나 반 묶음 스타일', en: 'Natural wave or half-up style' }, nextQuestionId: 'q7_bag_cvd', scoreKeywords: ['darkAcademia'] },
+    ],
+  },
+  q6_hair_svm: {
+    id: 'q6_hair_svm',
+    title: { ko: '당신은 어떤 헤어 스타일을 더 선호하나요?', en: 'Which hairstyle do you prefer more?' },
+    options: [
+      { text: { ko: '자연스러운 웨이브 혹은 포니테일', en: 'Natural wave or ponytail' }, nextQuestionId: 'q7_bag_svm', scoreKeywords: ['softGirl'] },
+      { text: { ko: '긴 생머리 혹은 느슨하게 묶은 머리', en: 'Long straight hair or loosely tied hair' }, nextQuestionId: 'q7_bag_svm', scoreKeywords: ['moriGirl'] },
+    ],
+  },
+  q7_bag_cvb: {
+    id: 'q7_bag_cvb',
+    title: { ko: '당신은 주로 어떤 스타일의 가방을 선호하나요?', en: 'What style of bag do you mainly prefer?' },
+    options: [
+      { text: { ko: '스몰 사이즈의 토트백 혹은 탑핸들백', en: 'Small size tote bag or top handle bag' }, nextQuestionId: 'q8_final_cvb', scoreKeywords: ['cleanGirl'] },
+      { text: { ko: '리본 포인트와 은은한 색감의 숄더백', en: 'Shoulder bag with ribbon point and subtle color' }, nextQuestionId: 'q8_final_cvb', scoreKeywords: ['balletcore'] },
+    ],
+  },
+  q7_bag_cvl: {
+    id: 'q7_bag_cvl',
+    title: { ko: '당신은 주로 어떤 스타일의 가방을 선호하나요?', en: 'What style of bag do you mainly prefer?' },
+    options: [
+      { text: { ko: '스몰 사이즈의 토트백 혹은 탑핸들백', en: 'Small size tote bag or top handle bag' }, nextQuestionId: 'q8_final_cvl', scoreKeywords: ['cleanGirl'] },
+      { text: { ko: '책이 들어가는 사이즈의 가죽 숄더백', en: 'Leather shoulder bag that fits books' }, nextQuestionId: 'q8_final_cvl', scoreKeywords: ['lightAcademia'] },
+    ],
+  },
+  q7_bag_cvd: {
+    id: 'q7_bag_cvd',
+    title: { ko: '당신은 주로 어떤 스타일의 가방을 선호하나요?', en: 'What style of bag do you mainly prefer?' },
+    options: [
+      { text: { ko: '스몰 사이즈의 토트백 혹은 탑핸들백', en: 'Small size tote bag or top handle bag' }, nextQuestionId: 'q8_final_cvd', scoreKeywords: ['cleanGirl'] },
+      { text: { ko: '브라운, 블랙 컬러의 가죽 숄더백', en: 'Leather shoulder bag in brown and black color' }, nextQuestionId: 'q8_final_cvd', scoreKeywords: ['darkAcademia'] },
+    ],
+  },
+  q7_bag_svm: {
+    id: 'q7_bag_svm',
+    title: { ko: '당신은 주로 어떤 스타일의 가방을 선호하나요?', en: 'What style of bag do you mainly prefer?' },
+    options: [
+      { text: { ko: '핑크, 화이트 컬러의 작은 숄더백', en: 'Small shoulder bag in pink and white color' }, nextQuestionId: 'q8_final_svm', scoreKeywords: ['softGirl'] },
+      { text: { ko: '수공예 코튼 백 혹은 부드러운 에코백', en: 'Handmade cotton bag or soft eco bag' }, nextQuestionId: 'q8_final_svm', scoreKeywords: ['moriGirl'] },
+    ],
+  },
+  q8_final_cvb: {
+    id: 'q8_final_cvb',
+    title: { ko: '마지막으로, 당신이 현재 보여주고 싶은 이미지를 골라주세요!', en: 'Finally, choose the image you want to show now!' },
+    options: [
+      { text: { ko: '차분하고 자기관리를 잘 하는 이미지', en: 'Calm image that takes good care of oneself' }, nextQuestionId: 'result_calculation', scoreKeywords: ['cleanGirl'] },
+      { text: { ko: '섬세하고 여리며 우아한 이미지', en: 'Delicate, tender and elegant image' }, nextQuestionId: 'result_calculation', scoreKeywords: ['balletcore'] },
+    ],
+  },
+  q8_final_cvl: {
+    id: 'q8_final_cvl',
+    title: { ko: '마지막으로, 당신이 현재 보여주고 싶은 이미지를 골라주세요!', en: 'Finally, choose the image you want to show now!' },
+    options: [
+      { text: { ko: '차분하고 자기관리를 잘 하는 이미지', en: 'Calm image that takes good care of oneself' }, nextQuestionId: 'result_calculation', scoreKeywords: ['cleanGirl'] },
+      { text: { ko: '지적이면서 따뜻하고 교양 있는 이미지', en: 'Intellectual, warm and cultured image' }, nextQuestionId: 'result_calculation', scoreKeywords: ['lightAcademia'] },
+    ],
+  },
+  q8_final_cvd: {
+    id: 'q8_final_cvd',
+    title: { ko: '마지막으로, 당신이 현재 보여주고 싶은 이미지를 골라주세요!', en: 'Finally, choose the image you want to show now!' },
+    options: [
+      { text: { ko: '차분하고 자기관리를 잘 하는 이미지', en: 'Calm image that takes good care of oneself' }, nextQuestionId: 'result_calculation', scoreKeywords: ['cleanGirl'] },
+      { text: { ko: '고요하고 깊이 있는 신비로운 이미지', en: 'Quiet, deep and mysterious image' }, nextQuestionId: 'result_calculation', scoreKeywords: ['darkAcademia'] },
+    ],
+  },
+  q8_final_svm: {
+    id: 'q8_final_svm',
+    title: { ko: '마지막으로, 당신이 현재 보여주고 싶은 이미지를 골라주세요!', en: 'Finally, choose the image you want to show now!' },
+    options: [
+      { text: { ko: '다정하고 사랑스러운 이미지', en: 'Kind and lovely image' }, nextQuestionId: 'result_calculation', scoreKeywords: ['softGirl'] },
+      { text: { ko: '잔잔하고 자유로운 이미지', en: 'Calm and free image' }, nextQuestionId: 'result_calculation', scoreKeywords: ['moriGirl'] },
+    ],
+  },
+};
+
+// 테토 그룹 질문 데이터
+const femaleTetoQuestions: Record<string, Question> = {
+  q2_vibe_teto: {
+    id: 'q2_vibe_teto',
+    title: { ko: '당신은 어떤 분위기의 존재감이 더 끌리나요?', en: 'What kind of presence atmosphere attracts you more?' },
+    options: [
+      { text: { ko: '대담하고 강렬한 에너지의 존재감', en: 'Bold and intense energy presence' }, nextQuestionId: 'q3_style_bold', scoreKeywords: ['mobWife', 'rockstar', 'bossBabe'] },
+      { text: { ko: '몽환적이고 은은히 드러나는 존재감', en: 'Dreamy and subtly revealed presence' }, nextQuestionId: 'q3_style_dreamy', scoreKeywords: ['acubi', 'vampire'] },
+    ],
+  },
+  q3_style_bold: {
+    id: 'q3_style_bold',
+    title: { ko: '당신은 어떤 옷의 스타일이 더 마음에 드나요?', en: 'Which clothing style do you like more?' },
+    options: [
+      { text: { ko: '깔끔하고 카리스마 있는 오피스 룩', en: 'Neat and charismatic office look' }, nextQuestionId: 'q4_makeup_neat', scoreKeywords: ['mobWife', 'bossBabe'] },
+      { text: { ko: '가죽과 블랙 컬러 위주의 반항적인 룩', en: 'Rebellious look mainly with leather and black color' }, nextQuestionId: 'q4_makeup_rebel', scoreKeywords: ['rockstar'] },
+    ],
+  },
+  q3_style_dreamy: {
+    id: 'q3_style_dreamy',
+    title: { ko: '당신은 어떤 옷의 스타일이 더 마음에 드나요?', en: 'Which clothing style do you like more?' },
+    options: [
+      { text: { ko: '미니멀하지만 디테일이 있는 빈티지 룩', en: 'Minimal but detailed vintage look' }, nextQuestionId: 'q4_makeup_vintage', scoreKeywords: ['acubi'] },
+      { text: { ko: '밤에 잘 어울리는 관능적인 고딕 룩', en: 'Sensual gothic look that suits the night' }, nextQuestionId: 'q4_makeup_gothic', scoreKeywords: ['vampire'] },
+    ],
+  },
+  q4_makeup_neat: {
+    id: 'q4_makeup_neat',
+    title: { ko: '당신은 어떤 메이크업이 더 매력적으로 느껴지나요?', en: 'What makeup feels more attractive to you?' },
+    options: [
+      { text: { ko: '카리스마 있는 아이라인과 또렷한 윤곽 메이크업', en: 'Charismatic eyeliner and clear contour makeup' }, nextQuestionId: 'q5_gaze_neat', scoreKeywords: ['bossBabe', 'mobWife'] },
+      { text: { ko: '카리스마 있는 아이라인과 또렷한 윤곽 메이크업', en: 'Charismatic eyeliner and clear contour makeup' }, nextQuestionId: 'q5_gaze_neat', scoreKeywords: ['bossBabe', 'mobWife'] },
+    ],
+  },
+  q4_makeup_rebel: {
+    id: 'q4_makeup_rebel',
+    title: { ko: '당신은 어떤 메이크업이 더 매력적으로 느껴지나요?', en: 'What makeup feels more attractive to you?' },
+    options: [
+      { text: { ko: '살짝 번진 아이라인과 메탈릭 포인트의 메이크업', en: 'Slightly smudged eyeliner and metallic point makeup' }, nextQuestionId: 'q5_gaze_rebel', scoreKeywords: ['bossBabe', 'rockstar'] },
+      { text: { ko: '살짝 번진 아이라인과 메탈릭 포인트의 메이크업', en: 'Slightly smudged eyeliner and metallic point makeup' }, nextQuestionId: 'q5_gaze_rebel', scoreKeywords: ['bossBabe', 'rockstar'] },
+    ],
+  },
+  q4_makeup_vintage: {
+    id: 'q4_makeup_vintage',
+    title: { ko: '당신은 어떤 메이크업이 더 매력적으로 느껴지나요?', en: 'What makeup feels more attractive to you?' },
+    options: [
+      { text: { ko: '뮤트한 색감의 차분하고 힙한 메이크업', en: 'Calm and hip makeup with mute colors' }, nextQuestionId: 'q5_gaze_dreamy', scoreKeywords: ['acubi'] },
+      { text: { ko: '창백한 피부와 딥 레드의 신비롭고 치명적인 메이크업', en: 'Mysterious and fatal makeup with pale skin and deep red' }, nextQuestionId: 'q5_gaze_dreamy', scoreKeywords: ['vampire'] },
+    ],
+  },
+  q4_makeup_gothic: {
+    id: 'q4_makeup_gothic',
+    title: { ko: '당신은 어떤 메이크업이 더 매력적으로 느껴지나요?', en: 'What makeup feels more attractive to you?' },
+    options: [
+      { text: { ko: '뮤트한 색감의 차분하고 힙한 메이크업', en: 'Calm and hip makeup with mute colors' }, nextQuestionId: 'q5_gaze_dreamy', scoreKeywords: ['acubi'] },
+      { text: { ko: '창백한 피부와 딥 레드의 신비롭고 치명적인 메이크업', en: 'Mysterious and fatal makeup with pale skin and deep red' }, nextQuestionId: 'q5_gaze_dreamy', scoreKeywords: ['vampire'] },
+    ],
+  },
+  q5_gaze_neat: {
+    id: 'q5_gaze_neat',
+    title: { ko: '당신이 보여주고픈 눈빛은 어떤 것과 더 가깝나요?', en: 'What kind of gaze do you want to show?' },
+    options: [
+      { text: { ko: '흔들림 없고 당당한 주도권의 눈빛', en: 'Unwavering and confident dominant gaze' }, nextQuestionId: 'q6_color_boss', scoreKeywords: ['bossBabe'] },
+      { text: { ko: '강렬하고 도발적이라 피하기 어려운 눈빛', en: 'Intense and provocative gaze that is hard to avoid' }, nextQuestionId: 'q6_color_mob', scoreKeywords: ['mobWife'] },
+    ],
+  },
+  q5_gaze_rebel: {
+    id: 'q5_gaze_rebel',
+    title: { ko: '당신이 보여주고픈 눈빛은 어떤 것과 더 가깝나요?', en: 'What kind of gaze do you want to show?' },
+    options: [
+      { text: { ko: '흔들림 없고 당당한 주도권의 눈빛', en: 'Unwavering and confident dominant gaze' }, nextQuestionId: 'q6_color_boss_rock', scoreKeywords: ['bossBabe'] },
+      { text: { ko: '규칙에 얽매이지 않는 에너지의 눈빛', en: 'Energetic gaze that is not bound by rules' }, nextQuestionId: 'q6_color_rock', scoreKeywords: ['rockstar'] },
+    ],
+  },
+  q5_gaze_dreamy: {
+    id: 'q5_gaze_dreamy',
+    title: { ko: '당신이 보여주고픈 눈빛은 어떤 것과 더 가깝나요?', en: 'What kind of gaze do you want to show?' },
+    options: [
+      { text: { ko: '감정을 쉽게 읽히지 않는 쿨한 눈빛', en: 'Cool gaze that is not easily readable' }, nextQuestionId: 'q6_color_acubi', scoreKeywords: ['acubi'] },
+      { text: { ko: '어둡고 깊어서 빠져드는 눈빛', en: 'Dark and deep gaze that draws you in' }, nextQuestionId: 'q6_color_vampire', scoreKeywords: ['vampire'] },
+    ],
+  },
+  q6_color_boss: {
+    id: 'q6_color_boss',
+    title: { ko: '당신은 어떤 컬러들의 조합을 더 선호하나요?', en: 'Which color combinations do you prefer more?' },
+    options: [
+      { text: { ko: '블랙, 화이트 등의 명확하고 힘 있는 조합', en: 'Clear and powerful combinations like black and white' }, nextQuestionId: 'q7_emotion_boss', scoreKeywords: ['bossBabe'] },
+      { text: { ko: '레오파드와 골드, 버건디 등의 대담한 조합', en: 'Bold combinations like leopard, gold, and burgundy' }, nextQuestionId: 'q7_emotion_mob', scoreKeywords: ['mobWife'] },
+    ],
+  },
+  q6_color_mob: {
+    id: 'q6_color_mob',
+    title: { ko: '당신은 어떤 컬러들의 조합을 더 선호하나요?', en: 'Which color combinations do you prefer more?' },
+    options: [
+      { text: { ko: '블랙, 화이트 등의 명확하고 힘 있는 조합', en: 'Clear and powerful combinations like black and white' }, nextQuestionId: 'q7_emotion_boss', scoreKeywords: ['bossBabe'] },
+      { text: { ko: '레오파드와 골드, 버건디 등의 대담한 조합', en: 'Bold combinations like leopard, gold, and burgundy' }, nextQuestionId: 'q7_emotion_mob', scoreKeywords: ['mobWife'] },
+    ],
+  },
+  q6_color_boss_rock: {
+    id: 'q6_color_boss_rock',
+    title: { ko: '당신은 어떤 컬러들의 조합을 더 선호하나요?', en: 'Which color combinations do you prefer more?' },
+    options: [
+      { text: { ko: '블랙, 화이트 등의 명확하고 힘 있는 조합', en: 'Clear and powerful combinations like black and white' }, nextQuestionId: 'q7_emotion_boss_rock', scoreKeywords: ['bossBabe'] },
+      { text: { ko: '블랙과 실버, 다크 레드처럼 대비가 강한 조합', en: 'High contrast combinations like black, silver, and dark red' }, nextQuestionId: 'q7_emotion_rock', scoreKeywords: ['rockstar'] },
+    ],
+  },
+  q6_color_rock: {
+    id: 'q6_color_rock',
+    title: { ko: '당신은 어떤 컬러들의 조합을 더 선호하나요?', en: 'Which color combinations do you prefer more?' },
+    options: [
+      { text: { ko: '블랙, 화이트 등의 명확하고 힘 있는 조합', en: 'Clear and powerful combinations like black and white' }, nextQuestionId: 'q7_emotion_boss_rock', scoreKeywords: ['bossBabe'] },
+      { text: { ko: '블랙과 실버, 다크 레드처럼 대비가 강한 조합', en: 'High contrast combinations like black, silver, and dark red' }, nextQuestionId: 'q7_emotion_rock', scoreKeywords: ['rockstar'] },
+    ],
+  },
+  q6_color_acubi: {
+    id: 'q6_color_acubi',
+    title: { ko: '당신은 어떤 컬러들의 조합을 더 선호하나요?', en: 'Which color combinations do you prefer more?' },
+    options: [
+      { text: { ko: '그레이, 차콜 등의 톤 다운된 미묘한 조합', en: 'Subtle combinations with toned down colors like gray and charcoal' }, nextQuestionId: 'q7_emotion_acubi', scoreKeywords: ['acubi'] },
+      { text: { ko: '블랙, 딥 레드, 와인 등의 관능적인 조합', en: 'Sensual combinations like black, deep red, and wine' }, nextQuestionId: 'q7_emotion_vampire', scoreKeywords: ['vampire'] },
+    ],
+  },
+  q6_color_vampire: {
+    id: 'q6_color_vampire',
+    title: { ko: '당신은 어떤 컬러들의 조합을 더 선호하나요?', en: 'Which color combinations do you prefer more?' },
+    options: [
+      { text: { ko: '그레이, 차콜 등의 톤 다운된 미묘한 조합', en: 'Subtle combinations with toned down colors like gray and charcoal' }, nextQuestionId: 'q7_emotion_acubi', scoreKeywords: ['acubi'] },
+      { text: { ko: '블랙, 딥 레드, 와인 등의 관능적인 조합', en: 'Sensual combinations like black, deep red, and wine' }, nextQuestionId: 'q7_emotion_vampire', scoreKeywords: ['vampire'] },
+    ],
+  },
+  q7_emotion_boss: {
+    id: 'q7_emotion_boss',
+    title: { ko: '당신은 어떤 감정선의 분위기가 더 끌리나요?', en: 'What kind of emotional atmosphere attracts you more?' },
+    options: [
+      { text: { ko: '감정에 휘둘리지 않고 자신감 있는 감정선', en: 'Emotional line that is confident and not swayed by emotions' }, nextQuestionId: 'q8_final_boss', scoreKeywords: ['bossBabe'] },
+      { text: { ko: '사랑과 분노, 욕망이 확실하고 극적인 감정선', en: 'Emotional line with clear and dramatic love, anger, and desire' }, nextQuestionId: 'q8_final_mob', scoreKeywords: ['mobWife'] },
+    ],
+  },
+  q7_emotion_mob: {
+    id: 'q7_emotion_mob',
+    title: { ko: '당신은 어떤 감정선의 분위기가 더 끌리나요?', en: 'What kind of emotional atmosphere attracts you more?' },
+    options: [
+      { text: { ko: '감정에 휘둘리지 않고 자신감 있는 감정선', en: 'Emotional line that is confident and not swayed by emotions' }, nextQuestionId: 'q8_final_boss', scoreKeywords: ['bossBabe'] },
+      { text: { ko: '사랑과 분노, 욕망이 확실하고 극적인 감정선', en: 'Emotional line with clear and dramatic love, anger, and desire' }, nextQuestionId: 'q8_final_mob', scoreKeywords: ['mobWife'] },
+    ],
+  },
+  q7_emotion_boss_rock: {
+    id: 'q7_emotion_boss_rock',
+    title: { ko: '당신은 어떤 감정선의 분위기가 더 끌리나요?', en: 'What kind of emotional atmosphere attracts you more?' },
+    options: [
+      { text: { ko: '감정에 휘둘리지 않고 자신감 있는 감정선', en: 'Emotional line that is confident and not swayed by emotions' }, nextQuestionId: 'q8_final_boss_rock', scoreKeywords: ['bossBabe'] },
+      { text: { ko: '불안정하지만 솔직해서 충동이 드러나는 감정선', en: 'Emotional line that is unstable but honest, revealing impulses' }, nextQuestionId: 'q8_final_rock', scoreKeywords: ['rockstar'] },
+    ],
+  },
+  q7_emotion_rock: {
+    id: 'q7_emotion_rock',
+    title: { ko: '당신은 어떤 감정선의 분위기가 더 끌리나요?', en: 'What kind of emotional atmosphere attracts you more?' },
+    options: [
+      { text: { ko: '감정에 휘둘리지 않고 자신감 있는 감정선', en: 'Emotional line that is confident and not swayed by emotions' }, nextQuestionId: 'q8_final_boss_rock', scoreKeywords: ['bossBabe'] },
+      { text: { ko: '불안정하지만 솔직해서 충동이 드러나는 감정선', en: 'Emotional line that is unstable but honest, revealing impulses' }, nextQuestionId: 'q8_final_rock', scoreKeywords: ['rockstar'] },
+    ],
+  },
+  q7_emotion_acubi: {
+    id: 'q7_emotion_acubi',
+    title: { ko: '당신은 어떤 감정선의 분위기가 더 끌리나요?', en: 'What kind of emotional atmosphere attracts you more?' },
+    options: [
+      { text: { ko: '속을 쉽게 드러내지 않는 절제된 감정선', en: 'Restrained emotional line that does not easily reveal inner feelings' }, nextQuestionId: 'q8_final_acubi', scoreKeywords: ['acubi'] },
+      { text: { ko: '고독과 집착, 갈망이 얽힌 깊고 어두운 감정선', en: 'Deep and dark emotional line intertwined with loneliness, obsession, and longing' }, nextQuestionId: 'q8_final_vampire', scoreKeywords: ['vampire'] },
+    ],
+  },
+  q7_emotion_vampire: {
+    id: 'q7_emotion_vampire',
+    title: { ko: '당신은 어떤 감정선의 분위기가 더 끌리나요?', en: 'What kind of emotional atmosphere attracts you more?' },
+    options: [
+      { text: { ko: '속을 쉽게 드러내지 않는 절제된 감정선', en: 'Restrained emotional line that does not easily reveal inner feelings' }, nextQuestionId: 'q8_final_acubi', scoreKeywords: ['acubi'] },
+      { text: { ko: '고독과 집착, 갈망이 얽힌 깊고 어두운 감정선', en: 'Deep and dark emotional line intertwined with loneliness, obsession, and longing' }, nextQuestionId: 'q8_final_vampire', scoreKeywords: ['vampire'] },
+    ],
+  },
+  q8_final_boss: {
+    id: 'q8_final_boss',
+    title: { ko: '마지막으로, 당신이 현재 보여주고 싶은 이미지를 골라주세요!', en: 'Finally, choose the image you want to show now!' },
+    options: [
+      { text: { ko: '자기 확신이 분명하고 주도적인 이미지', en: 'Image with clear self-confidence and leadership' }, nextQuestionId: 'result_calculation', scoreKeywords: ['bossBabe'] },
+      { text: { ko: '쉽게 잊혀지지 않는 관능적인 이미지', en: 'Sensual image that is not easily forgotten' }, nextQuestionId: 'result_calculation', scoreKeywords: ['mobWife'] },
+    ],
+  },
+  q8_final_mob: {
+    id: 'q8_final_mob',
+    title: { ko: '마지막으로, 당신이 현재 보여주고 싶은 이미지를 골라주세요!', en: 'Finally, choose the image you want to show now!' },
+    options: [
+      { text: { ko: '자기 확신이 분명하고 주도적인 이미지', en: 'Image with clear self-confidence and leadership' }, nextQuestionId: 'result_calculation', scoreKeywords: ['bossBabe'] },
+      { text: { ko: '쉽게 잊혀지지 않는 관능적인 이미지', en: 'Sensual image that is not easily forgotten' }, nextQuestionId: 'result_calculation', scoreKeywords: ['mobWife'] },
+    ],
+  },
+  q8_final_boss_rock: {
+    id: 'q8_final_boss_rock',
+    title: { ko: '마지막으로, 당신이 현재 보여주고 싶은 이미지를 골라주세요!', en: 'Finally, choose the image you want to show now!' },
+    options: [
+      { text: { ko: '자기 확신이 분명하고 주도적인 이미지', en: 'Image with clear self-confidence and leadership' }, nextQuestionId: 'result_calculation', scoreKeywords: ['bossBabe'] },
+      { text: { ko: '틀에 얽매이지 않는 자유로운 이미지', en: 'Free image that is not bound by frames' }, nextQuestionId: 'result_calculation', scoreKeywords: ['rockstar'] },
+    ],
+  },
+  q8_final_rock: {
+    id: 'q8_final_rock',
+    title: { ko: '마지막으로, 당신이 현재 보여주고 싶은 이미지를 골라주세요!', en: 'Finally, choose the image you want to show now!' },
+    options: [
+      { text: { ko: '자기 확신이 분명하고 주도적인 이미지', en: 'Image with clear self-confidence and leadership' }, nextQuestionId: 'result_calculation', scoreKeywords: ['bossBabe'] },
+      { text: { ko: '틀에 얽매이지 않는 자유로운 이미지', en: 'Free image that is not bound by frames' }, nextQuestionId: 'result_calculation', scoreKeywords: ['rockstar'] },
+    ],
+  },
+  q8_final_acubi: {
+    id: 'q8_final_acubi',
+    title: { ko: '마지막으로, 당신이 현재 보여주고 싶은 이미지를 골라주세요!', en: 'Finally, choose the image you want to show now!' },
+    options: [
+      { text: { ko: '조용하지만 힙하고 쿨한 이미지', en: 'Quiet but hip and cool image' }, nextQuestionId: 'result_calculation', scoreKeywords: ['acubi'] },
+      { text: { ko: '신비롭고 어두우며 궁금해지는 이미지', en: 'Mysterious, dark, and intriguing image' }, nextQuestionId: 'result_calculation', scoreKeywords: ['vampire'] },
+    ],
+  },
+  q8_final_vampire: {
+    id: 'q8_final_vampire',
+    title: { ko: '마지막으로, 당신이 현재 보여주고 싶은 이미지를 골라주세요!', en: 'Finally, choose the image you want to show now!' },
+    options: [
+      { text: { ko: '조용하지만 힙하고 쿨한 이미지', en: 'Quiet but hip and cool image' }, nextQuestionId: 'result_calculation', scoreKeywords: ['acubi'] },
+      { text: { ko: '신비롭고 어두우며 궁금해지는 이미지', en: 'Mysterious, dark, and intriguing image' }, nextQuestionId: 'result_calculation', scoreKeywords: ['vampire'] },
+    ],
+  },
+};
+
+// 남성 질문 데이터 (Linked List 방식)
+const maleQuestions: Record<string, Question> = {
+  m_q1_start: {
+    id: 'm_q1_start',
+    title: { ko: '당신은 어떤 인상을 주고 싶은가요?', en: 'What kind of impression do you want to give?' },
+    options: [
+      { text: { ko: '부드럽고 편안한 인상', en: 'Soft and comfortable impression' }, nextQuestionId: 'm_q2_style_nonteto', scoreKeywords: ['cleanBoy', 'softBoy', 'darkAcademiaBoy', 'naturalBoy'] },
+      { text: { ko: '카리스마 있는 강렬한 인상', en: 'Charismatic and intense impression' }, nextQuestionId: 'm_q2_style_teto', scoreKeywords: ['streetBoy', 'rockBoy', 'gentleBoy', 'techBoy'] },
+    ],
+  },
+  m_q2_style_teto: {
+    id: 'm_q2_style_teto',
+    title: { ko: '당신이 더 편안하게 느끼는 스타일은 무엇인가요?', en: 'Which style do you feel more comfortable with?' },
+    options: [
+      { text: { ko: '자유롭고 개성적인 스타일', en: 'Free and individualistic style' }, nextQuestionId: 'm_q3_imp_teto', scoreKeywords: ['streetBoy', 'rockBoy'] },
+      { text: { ko: '정돈된 느낌의 깔끔한 스타일', en: 'Neat and organized style' }, nextQuestionId: 'm_q3_imp_teto', scoreKeywords: ['gentleBoy', 'techBoy'] },
+    ],
+  },
+  m_q3_imp_teto: {
+    id: 'm_q3_imp_teto',
+    title: { ko: '당신은 스타일링을 통해 어떤 인상을 주고싶나요?', en: 'What impression do you want to give through styling?' },
+    options: [
+      { text: { ko: '규칙에 얽매이지 않는 자유로운 인상', en: 'Free impression that is not bound by rules' }, nextQuestionId: 'm_q4_color_wild', scoreKeywords: ['streetBoy', 'rockBoy'] },
+      { text: { ko: '세련되고 정돈되어 신뢰감 있는 인상', en: 'Sophisticated and organized impression that gives trust' }, nextQuestionId: 'm_q4_color_neat', scoreKeywords: ['gentleBoy', 'techBoy'] },
+    ],
+  },
+  m_q4_color_wild: {
+    id: 'm_q4_color_wild',
+    title: { ko: '당신이 어떤 컬러 조합을 더 선호하나요?', en: 'Which color combination do you prefer more?' },
+    options: [
+      { text: { ko: '네온, 레드, 그래픽 컬러 포인트가 대비되는 조합', en: 'Combination with contrasting neon, red, and graphic color points' }, nextQuestionId: 'm_q5_hair_wild', scoreKeywords: ['streetBoy'] },
+      { text: { ko: '워싱 포인트의 거칠고 어두운 무드의 조합', en: 'Combination with rough and dark mood of washing points' }, nextQuestionId: 'm_q5_hair_wild', scoreKeywords: ['rockBoy'] },
+    ],
+  },
+  m_q4_color_neat: {
+    id: 'm_q4_color_neat',
+    title: { ko: '당신이 어떤 컬러 조합을 더 선호하나요?', en: 'Which color combination do you prefer more?' },
+    options: [
+      { text: { ko: '네이비, 그레이처럼 클래식한 조합', en: 'Classic combination like navy and gray' }, nextQuestionId: 'm_q5_hair_neat', scoreKeywords: ['gentleBoy'] },
+      { text: { ko: '차콜, 실버 등의 미래적인 조합', en: 'Futuristic combination like charcoal and silver' }, nextQuestionId: 'm_q5_hair_neat', scoreKeywords: ['techBoy'] },
+    ],
+  },
+  m_q5_hair_wild: {
+    id: 'm_q5_hair_wild',
+    title: { ko: '당신은 어떤 헤어스타일을 더 선호하나요?', en: 'Which hairstyle do you prefer more?' },
+    options: [
+      { text: { ko: '자연스럽게 흐트러진 스트릿 감성의 헤어', en: 'Naturally disheveled street-style hair' }, nextQuestionId: 'm_q6_final_wild', scoreKeywords: ['streetBoy'] },
+      { text: { ko: '장발이나 울프컷처럼 개성이 강한 헤어', en: 'Hair with strong personality like long hair or wolf cut' }, nextQuestionId: 'm_q6_final_wild', scoreKeywords: ['rockBoy'] },
+    ],
+  },
+  m_q5_hair_neat: {
+    id: 'm_q5_hair_neat',
+    title: { ko: '당신은 어떤 헤어스타일을 더 선호하나요?', en: 'Which hairstyle do you prefer more?' },
+    options: [
+      { text: { ko: '오피스에 잘 어울리는 가르마', en: 'Parted hair that suits the office' }, nextQuestionId: 'm_q6_final_neat', scoreKeywords: ['gentleBoy'] },
+      { text: { ko: '미니멀하고 깔끔한 쇼트 컷', en: 'Minimal and neat short cut' }, nextQuestionId: 'm_q6_final_neat', scoreKeywords: ['techBoy'] },
+    ],
+  },
+  m_q6_final_wild: {
+    id: 'm_q6_final_wild',
+    title: { ko: '마지막으로, 현재 당신이 보여주고픈 이미지를 선택해주세요!', en: 'Finally, choose the image you want to show now!' },
+    options: [
+      { text: { ko: '자유롭고 트렌디해서 시선이 가는 이미지', en: 'Free and trendy image that draws attention' }, nextQuestionId: 'result_calculation', scoreKeywords: ['streetBoy'] },
+      { text: { ko: '거칠고 대담한 반항적인 이미지', en: 'Rough and bold rebellious image' }, nextQuestionId: 'result_calculation', scoreKeywords: ['rockBoy'] },
+    ],
+  },
+  m_q6_final_neat: {
+    id: 'm_q6_final_neat',
+    title: { ko: '마지막으로, 현재 당신이 보여주고픈 이미지를 선택해주세요!', en: 'Finally, choose the image you want to show now!' },
+    options: [
+      { text: { ko: '차분하고 단정해서 신뢰감 있는 이미지', en: 'Calm and neat image that gives trust' }, nextQuestionId: 'result_calculation', scoreKeywords: ['gentleBoy'] },
+      { text: { ko: '효율적이고 스마트한 감각의 이미지', en: 'Efficient and smart image' }, nextQuestionId: 'result_calculation', scoreKeywords: ['techBoy'] },
+    ],
+  },
+  m_q2_style_nonteto: {
+    id: 'm_q2_style_nonteto',
+    title: { ko: '당신이 더 편안하게 느끼는 스타일은 무엇인가요?', en: 'Which style do you feel more comfortable with?' },
+    options: [
+      { text: { ko: '차분하고 단정한 룩', en: 'Calm and neat look' }, nextQuestionId: 'm_q3_imp_nonteto', scoreKeywords: ['cleanBoy', 'darkAcademiaBoy'] },
+      { text: { ko: '편안하고 자연스러운 룩', en: 'Comfortable and natural look' }, nextQuestionId: 'm_q3_imp_nonteto', scoreKeywords: ['softBoy', 'naturalBoy'] },
+    ],
+  },
+  m_q3_imp_nonteto: {
+    id: 'm_q3_imp_nonteto',
+    title: { ko: '당신은 스타일링을 통해 어떤 인상을 주고싶나요?', en: 'What impression do you want to give through styling?' },
+    options: [
+      { text: { ko: '지적이고 신뢰감 있는 인상', en: 'Intellectual and trustworthy impression' }, nextQuestionId: 'm_q4_color_smart', scoreKeywords: ['cleanBoy', 'darkAcademiaBoy'] },
+      { text: { ko: '친근하고 편안한 인상', en: 'Friendly and comfortable impression' }, nextQuestionId: 'm_q4_color_soft', scoreKeywords: ['softBoy', 'naturalBoy'] },
+    ],
+  },
+  m_q4_color_smart: {
+    id: 'm_q4_color_smart',
+    title: { ko: '당신이 어떤 컬러 조합을 더 선호하나요?', en: 'Which color combination do you prefer more?' },
+    options: [
+      { text: { ko: '화이트, 블랙 등의 명확한 뉴트럴 조합', en: 'Clear neutral combination like white and black' }, nextQuestionId: 'm_q5_hair_smart', scoreKeywords: ['cleanBoy'] },
+      { text: { ko: '브라운, 딥 그린 등의 어스 톤 조합', en: 'Earth tone combination like brown and deep green' }, nextQuestionId: 'm_q5_hair_smart', scoreKeywords: ['darkAcademiaBoy'] },
+    ],
+  },
+  m_q4_color_soft: {
+    id: 'm_q4_color_soft',
+    title: { ko: '당신이 어떤 컬러 조합을 더 선호하나요?', en: 'Which color combination do you prefer more?' },
+    options: [
+      { text: { ko: '파스텔 톤의 부드럽고 따뜻한 조합', en: 'Soft and warm combination of pastel tones' }, nextQuestionId: 'm_q5_hair_soft', scoreKeywords: ['softBoy'] },
+      { text: { ko: '베이지, 카키 등의 내츄럴한 조합', en: 'Natural combination like beige and khaki' }, nextQuestionId: 'm_q5_hair_soft', scoreKeywords: ['naturalBoy'] },
+    ],
+  },
+  m_q5_hair_smart: {
+    id: 'm_q5_hair_smart',
+    title: { ko: '당신은 어떤 헤어스타일을 더 선호하나요?', en: 'Which hairstyle do you prefer more?' },
+    options: [
+      { text: { ko: '짧은 커트나 가르마 등의 손질이 잘 된 스타일', en: 'Well-groomed style like short cut or parted hair' }, nextQuestionId: 'm_q6_final_smart', scoreKeywords: ['cleanBoy'] },
+      { text: { ko: '자연스럽게 흐르는 중장발이나 클래식한 가르마', en: 'Naturally flowing medium-long hair or classic parted hair' }, nextQuestionId: 'm_q6_final_smart', scoreKeywords: ['darkAcademiaBoy'] },
+    ],
+  },
+  m_q5_hair_soft: {
+    id: 'm_q5_hair_soft',
+    title: { ko: '당신은 어떤 헤어스타일을 더 선호하나요?', en: 'Which hairstyle do you prefer more?' },
+    options: [
+      { text: { ko: '부드러운 웨이브나 가르마의 온화한 스타일', en: 'Gentle style with soft waves or parted hair' }, nextQuestionId: 'm_q6_final_soft', scoreKeywords: ['softBoy'] },
+      { text: { ko: '최소한의 손질로 자연스러운 질감의 스타일', en: 'Style with natural texture with minimal grooming' }, nextQuestionId: 'm_q6_final_soft', scoreKeywords: ['naturalBoy'] },
+    ],
+  },
+  m_q6_final_smart: {
+    id: 'm_q6_final_smart',
+    title: { ko: '마지막으로, 현재 당신이 보여주고픈 이미지를 선택해주세요!', en: 'Finally, choose the image you want to show now!' },
+    options: [
+      { text: { ko: '신뢰감 있고, 누구에게나 호감인 이미지', en: 'Trustworthy and likable image to everyone' }, nextQuestionId: 'result_calculation', scoreKeywords: ['cleanBoy'] },
+      { text: { ko: '지적이고 차분하며, 깊은 생각이 느껴지는 이미지', en: 'Intellectual, calm image that shows deep thinking' }, nextQuestionId: 'result_calculation', scoreKeywords: ['darkAcademiaBoy'] },
+    ],
+  },
+  m_q6_final_soft: {
+    id: 'm_q6_final_soft',
+    title: { ko: '마지막으로, 현재 당신이 보여주고픈 이미지를 선택해주세요!', en: 'Finally, choose the image you want to show now!' },
+    options: [
+      { text: { ko: '부드럽고 따뜻해서 함께하면 편안해지는 이미지', en: 'Soft and warm image that makes you feel comfortable together' }, nextQuestionId: 'result_calculation', scoreKeywords: ['softBoy'] },
+      { text: { ko: '꾸미지 않아도 매력이 전해지는 이미지', en: 'Image that conveys charm without decoration' }, nextQuestionId: 'result_calculation', scoreKeywords: ['naturalBoy'] },
+    ],
+  },
+};
+
 export default function QuestionFlow() {
   const { t, lang } = useLanguage();
   const router = useRouter();
@@ -27,7 +620,8 @@ export default function QuestionFlow() {
   const [age, setAge] = useState('');
   const [gender, setGender] = useState('');
   const [mbti, setMbti] = useState('');
-  const [selections, setSelections] = useState<string[]>([]);
+  const [selections, setSelections] = useState<string[]>([]); // 남성 질문용
+  const [currentQuestionId, setCurrentQuestionId] = useState<string>('q1_start');
   const [isCalculating, setIsCalculating] = useState(false);
   const [dotCount, setDotCount] = useState(0);
   const [scores, setScores] = useState<Scores>({
@@ -40,275 +634,44 @@ export default function QuestionFlow() {
     streetBoy: 0, rockBoy: 0, gentleBoy: 0, techBoy: 0,
   });
 
-  const addScore = (styles: StyleType[]) => {
+  // 모든 질문 데이터 통합
+  const allQuestions: Record<string, Question> = {
+    ...femaleAegenQuestions,
+    ...femaleTetoQuestions,
+    ...maleQuestions,
+  };
+
+  const addScore = (keywords: StyleType[]) => {
     setScores(prev => {
       const newScores = { ...prev };
-      styles.forEach(s => newScores[s]++);
+      keywords.forEach(k => newScores[k]++);
       return newScores;
     });
   };
 
-  const getMaleQuestion = (currentStep: number, prev: string[]) => {
-    // 남성 질문 1 (step 2) - 메인 분기: 논테토 vs 테토
-    if (currentStep === 2) {
-      return {
-        title: { ko: '당신은 어떤 인상을 주고 싶은가요?', en: 'What kind of impression do you want to give?' },
-        options: [
-          { text: { ko: '부드럽고 편안한 인상', en: 'Soft and comfortable impression' }, value: 'nonTeto', styles: ['cleanBoy', 'softBoy', 'darkAcademiaBoy', 'naturalBoy'] as StyleType[] },
-          { text: { ko: '카리스마 있고 강렬한 인상', en: 'Charismatic and intense impression' }, value: 'teto', styles: ['streetBoy', 'rockBoy', 'gentleBoy', 'techBoy'] as StyleType[] }
-        ]
-      };
-    }
+  // Linked List 방식으로 질문 가져오기
+  const getQuestion = (): Question | null => {
+    if (step < 2) return null;
     
-    // 남성 질문 2 (step 3)
-    if (currentStep === 3) {
-      if (prev[0] === 'nonTeto') {
-        return {
-          title: { ko: '당신의 스타일 취향은 어느 쪽에 더 가깝나요?', en: 'Which side is your style preference closer to?' },
-          options: [
-            { text: { ko: '깔끔하고 구조적인 실루엣의 옷', en: 'Neat and structured silhouette clothes' }, value: 'minimal', styles: ['cleanBoy', 'naturalBoy'] as StyleType[] },
-            { text: { ko: '니트·셔츠·가디건 같은 부드러운 옷', en: 'Soft clothes like knits, shirts, cardigans' }, value: 'emotional', styles: ['softBoy', 'darkAcademiaBoy'] as StyleType[] }
-          ]
-        };
-      } else {
-        return {
-          title: { ko: '당신의 스타일 무드는 어떤 쪽에 더 가깝나요?', en: 'Which side is your style mood closer to?' },
-          options: [
-            { text: { ko: '오버핏·그래픽 같은 에너지 있는 스타일', en: 'Energetic style like oversized and graphic' }, value: 'highEnergy', styles: ['streetBoy', 'rockBoy'] as StyleType[] },
-            { text: { ko: '깔끔하고 구조적인 실루엣 스타일', en: 'Neat and structured silhouette style' }, value: 'highControl', styles: ['gentleBoy', 'techBoy'] as StyleType[] }
-          ]
-        };
-      }
-    }
-    
-    // 남성 질문 3 (step 4)
-    if (currentStep === 4) {
-      if (prev[0] === 'nonTeto') {
-        if (prev[1] === 'minimal') {
-          // 논테토 미니멀 분기: 클린 vs 내츄럴
-          return {
-            title: { ko: '어떤 패션 무드가 더 편안한가요?', en: 'Which fashion mood is more comfortable?' },
-            options: [
-              { text: { ko: '꾸안꾸 미니멀 스타일', en: 'Effortless minimal style' }, value: 'minimal3', styles: ['cleanBoy', 'naturalBoy'] as StyleType[] },
-              { text: { ko: '부드럽고 따뜻한 스타일', en: 'Soft and warm style' }, value: 'emotional3', styles: ['softBoy', 'darkAcademiaBoy'] as StyleType[] }
-            ]
-          };
-        } else {
-          // 논테토 감성 분기: 소프트 vs 다크
-          return {
-            title: { ko: '당신이 더 잘 어울린다고 느끼는 분위기는?', en: 'What atmosphere do you feel suits you better?' },
-            options: [
-              { text: { ko: '부드럽고 파스텔 톤', en: 'Soft and pastel tone' }, value: 'emotional3', styles: ['softBoy'] as StyleType[] },
-              { text: { ko: '브라운·다크그린·네이비 같은 깊은 톤', en: 'Deep tones like brown, dark green, navy' }, value: 'darkTone', styles: ['darkAcademiaBoy'] as StyleType[] }
-            ]
-          };
-        }
-      } else {
-        if (prev[1] === 'highEnergy') {
-          // 테토 하이 에너지 분기: 스트릿 vs 락
-          return {
-            title: { ko: '어떤 스타일 요소에 더 끌리나요?', en: 'Which style element attracts you more?' },
-            options: [
-              { text: { ko: '체인이나 반지 같은 메탈 액세서리', en: 'Metal accessories like chains and rings' }, value: 'metal', styles: ['streetBoy', 'rockBoy'] as StyleType[] },
-              { text: { ko: '오래가는 클래식 스타일', en: 'Timeless classic style' }, value: 'timeless', styles: ['gentleBoy', 'techBoy'] as StyleType[] }
-            ]
-          };
-        } else {
-          // 테토 하이 컨트롤 분기: 젠틀 vs 테크
-          return {
-            title: { ko: '어떤 스타일을 더 선호하나요?', en: 'Which style do you prefer more?' },
-            options: [
-              { text: { ko: '유행보다 오래가는 스타일', en: 'Timeless style over trends' }, value: 'timeless', styles: ['gentleBoy', 'techBoy'] as StyleType[] },
-              { text: { ko: '체인이나 메탈 스타일', en: 'Chain or metal style' }, value: 'metal', styles: ['streetBoy', 'rockBoy'] as StyleType[] }
-            ]
-          };
-        }
-      }
-    }
-    
-    // 남성 질문 4 (step 5) - 질문3 결과에 따라 분기
-    if (currentStep === 5) {
-      const q2 = prev[1];
-      const q3 = prev[2];
-      
-      if (prev[0] === 'nonTeto' && q2 === 'minimal' && q3 === 'minimal3') {
-        // 논테토 미니멀: 클린 vs 내츄럴
-        return {
-          title: { ko: '당신이 더 편안하게 느끼는 스타일은 무엇인가요?', en: 'What style do you feel more comfortable with?' },
-          options: [
-            { text: { ko: '정돈된 인상', en: 'Neat impression' }, value: 'organized', styles: ['cleanBoy'] as StyleType[] },
-            { text: { ko: '린넨·코튼·니트 같은 자연 소재', en: 'Natural materials like linen, cotton, knit' }, value: 'naturalMaterial', styles: ['naturalBoy'] as StyleType[] }
-          ]
-        };
-      } else if (prev[0] === 'nonTeto' && q2 === 'emotional' && q3 === 'emotional3') {
-        // 논테토 감성: 소프트 vs 다크
-        return {
-          title: { ko: '어떤 색감 스타일이 더 끌리나요?', en: 'Which color style attracts you more?' },
-          options: [
-            { text: { ko: '부드러운 컬러나 따뜻한 분위기', en: 'Soft colors or warm atmosphere' }, value: 'pastelColor', styles: ['softBoy'] as StyleType[] },
-            { text: { ko: '트렌치코트나 클래식한 브라운 계열', en: 'Trench coat or classic brown tones' }, value: 'darkCoat', styles: ['darkAcademiaBoy'] as StyleType[] }
-          ]
-        };
-      } else if (prev[0] === 'nonTeto' && q2 === 'emotional' && q3 === 'darkTone') {
-        // 논테토 감성: 소프트 vs 다크 (다크 선택)
-        return {
-          title: { ko: '어떤 색감 스타일이 더 끌리나요?', en: 'Which color style attracts you more?' },
-          options: [
-            { text: { ko: '부드러운 컬러나 따뜻한 분위기', en: 'Soft colors or warm atmosphere' }, value: 'pastelColor', styles: ['softBoy'] as StyleType[] },
-            { text: { ko: '트렌치코트나 클래식한 브라운 계열', en: 'Trench coat or classic brown tones' }, value: 'darkCoat', styles: ['darkAcademiaBoy'] as StyleType[] }
-          ]
-        };
-      } else if (prev[0] === 'teto' && q2 === 'highEnergy' && q3 === 'metal') {
-        // 테토 하이 에너지: 스트릿 vs 락
-        return {
-          title: { ko: '당신에게 더 잘 맞는 룩은?', en: 'Which look suits you better?' },
-          options: [
-            { text: { ko: '후드·조거·스니커즈 같은 스트릿 룩', en: 'Street look like hoodie, jogger, sneakers' }, value: 'hoodie', styles: ['streetBoy'] as StyleType[] },
-            { text: { ko: '가죽 재킷·부츠 같은 락 스타일', en: 'Rock style like leather jacket and boots' }, value: 'leather', styles: ['rockBoy'] as StyleType[] }
-          ]
-        };
-      } else {
-        // 테토 하이 컨트롤: 젠틀 vs 테크
-        return {
-          title: { ko: '어떤 디테일이 당신을 더 돋보이게 하나요?', en: 'Which detail makes you stand out more?' },
-          options: [
-            { text: { ko: '구두·시계 등 정제된 아이템', en: 'Refined items like shoes and watches' }, value: 'details', styles: ['gentleBoy'] as StyleType[] },
-            { text: { ko: '애플워치·이어폰·백팩 같은 테크 아이템', en: 'Tech items like Apple Watch, earphones, backpack' }, value: 'tech', styles: ['techBoy'] as StyleType[] }
-          ]
-        };
-      }
-    }
-    
-    // 남성 질문 5 (step 6)
-    if (currentStep === 6) {
-      const q2 = prev[1];
-      const q3 = prev[2];
-      const q4 = prev[3];
-      
-      if (prev[0] === 'nonTeto' && q2 === 'minimal' && q3 === 'minimal3' && (q4 === 'organized' || q4 === 'naturalMaterial')) {
-        // 논테토 미니멀: 클린 vs 내츄럴
-        return {
-          title: { ko: '어떤 헤어스타일이 더 나다운가요?', en: 'Which hairstyle is more like you?' },
-          options: [
-            { text: { ko: '늘 가지런하고 깔끔하게 유지하는 헤어스타일', en: 'Hairstyle that is always kept neat and tidy' }, value: 'neatHair', styles: ['cleanBoy'] as StyleType[] },
-            { text: { ko: '꾸민 느낌보다 자연스러운 헤어스타일', en: 'Natural hairstyle rather than styled feeling' }, value: 'naturalLook', styles: ['naturalBoy'] as StyleType[] }
-          ]
-        };
-      } else if (prev[0] === 'nonTeto' && q2 === 'emotional' && (q3 === 'emotional3' || q3 === 'darkTone') && (q4 === 'pastelColor' || q4 === 'darkCoat')) {
-        // 논테토 감성: 소프트 vs 다크
-        return {
-          title: { ko: '어떤 메이크업/헤어 무드를 선호하나요?', en: 'Which makeup/hair mood do you prefer?' },
-          options: [
-            { text: { ko: '자연스러운 헤어와 편안한 이미지', en: 'Natural hair and comfortable image' }, value: 'naturalMakeup', styles: ['softBoy'] as StyleType[] },
-            { text: { ko: '음영감 있고 분위기 있는 이미지', en: 'Image with shading and atmosphere' }, value: 'darkColor', styles: ['darkAcademiaBoy'] as StyleType[] }
-          ]
-        };
-      } else if (prev[0] === 'teto' && q2 === 'highEnergy' && q3 === 'metal' && (q4 === 'hoodie' || q4 === 'leather')) {
-        // 테토 하이 에너지: 스트릿 vs 락
-        return {
-          title: { ko: '당신의 취향에 맞는 감성은?', en: 'What sensibility matches your taste?' },
-          options: [
-            { text: { ko: '틱톡·인스타 패션 트렌드', en: 'TikTok and Instagram fashion trends' }, value: 'trendCheck', styles: ['streetBoy'] as StyleType[] },
-            { text: { ko: '다크·스모키한 분위기', en: 'Dark and smoky atmosphere' }, value: 'smoky', styles: ['rockBoy'] as StyleType[] }
-          ]
-        };
-      } else {
-        // 테토 하이 컨트롤: 젠틀 vs 테크
-        return {
-          title: { ko: '당신의 이미지에서 어떤 요소가 중요하나요?', en: 'What element is important in your image?' },
-          options: [
-            { text: { ko: '매너 있고 침착한 분위기', en: 'Well-mannered and calm atmosphere' }, value: 'manner', styles: ['gentleBoy'] as StyleType[] },
-            { text: { ko: '효율적이고 스마트한 분위기', en: 'Efficient and smart atmosphere' }, value: 'efficient', styles: ['techBoy'] as StyleType[] }
-          ]
-        };
-      }
-    }
-    
-    // 남성 질문 6 (step 7) - 최종
-    if (currentStep === 7) {
-      const q2 = prev[1];
-      const q3 = prev[2];
-      const q4 = prev[3];
-      const q5 = prev[4];
-      
-      if (prev[0] === 'nonTeto' && q2 === 'minimal' && q3 === 'minimal3' && (q4 === 'organized' || q4 === 'naturalMaterial') && (q5 === 'neatHair' || q5 === 'naturalLook')) {
-        // 논테토 미니멀: 클린 vs 내츄럴
-        return {
-          title: { ko: '어떤 \'자기 표현 방식\'이 더 당신답다고 느끼나요?', en: 'What \'self-expression method\' feels more like you?' },
-          options: [
-            { text: { ko: '깔끔하고 신뢰감 있는 이미지', en: 'Neat and trustworthy image' }, value: 'trustworthy', styles: ['cleanBoy'] as StyleType[] },
-            { text: { ko: '패션으로 나를 돋보이게 하기보다는 조화롭게 스며들게 하기', en: 'Blending harmoniously rather than standing out with fashion' }, value: 'harmony', styles: ['naturalBoy'] as StyleType[] }
-          ]
-        };
-      } else if (prev[0] === 'nonTeto' && q2 === 'emotional' && (q3 === 'emotional3' || q3 === 'darkTone') && (q4 === 'pastelColor' || q4 === 'darkCoat') && (q5 === 'naturalMakeup' || q5 === 'darkColor')) {
-        // 논테토 감성: 소프트 vs 다크
-        return {
-          title: { ko: '어떤 인상이 더 마음에 드나요?', en: 'Which impression do you like more?' },
-          options: [
-            { text: { ko: '\'다정하다\', \'섬세하다\'을 주는 인상', en: 'Impression that gives \'kind\' and \'delicate\'' }, value: 'kind', styles: ['softBoy'] as StyleType[] },
-            { text: { ko: '감정보다는 \'깊이 있는 분위기\'로 기억되는 인상', en: 'Impression remembered for \'deep atmosphere\' rather than emotion' }, value: 'deep', styles: ['darkAcademiaBoy'] as StyleType[] }
-          ]
-        };
-      } else if (prev[0] === 'teto' && q2 === 'highEnergy' && q3 === 'metal' && (q4 === 'hoodie' || q4 === 'leather') && (q5 === 'trendCheck' || q5 === 'smoky')) {
-        // 테토 하이 에너지: 스트릿 vs 락
-        return {
-          title: { ko: '당신이 어떤 사람으로 보이고 싶나요?', en: 'What kind of person do you want to be seen as?' },
-          options: [
-            { text: { ko: '자유롭고 즉흥적인 사람', en: 'Free and spontaneous person' }, value: 'freeSpirit', styles: ['streetBoy'] as StyleType[] },
-            { text: { ko: '반항적이지만 진심 있는 사람', en: 'Rebellious but sincere person' }, value: 'sincere', styles: ['rockBoy'] as StyleType[] }
-          ]
-        };
-      } else {
-        // 테토 하이 컨트롤: 젠틀 vs 테크
-        return {
-          title: { ko: '당신이 추구하는 이미지는?', en: 'What image do you pursue?' },
-          options: [
-            { text: { ko: '정제된 언행과 깔끔한 이미지', en: 'Refined behavior and neat image' }, value: 'refined', styles: ['gentleBoy'] as StyleType[] },
-            { text: { ko: '\'심플하지만 스마트한 사람\'이라는 이미지', en: 'Image of \'simple but smart person\'' }, value: 'smart', styles: ['techBoy'] as StyleType[] }
-          ]
-        };
-      }
-    }
-    
-    return null;
+    // Linked List 방식으로 질문 가져오기
+    const question = allQuestions[currentQuestionId];
+    return question || null;
   };
 
-  const handleAnswer = (value: string, styles: StyleType[]) => {
-    // 디버깅: 답변과 점수 추가 전 상태
-    console.log('Before addScore - value:', value, 'styles:', styles);
-    console.log('Before addScore - current scores:', scores);
+  // 답변 선택 핸들러 (Linked List 방식)
+  const handleAnswerLinked = (option: QuestionOption) => {
+    // 점수 추가
+    addScore(option.scoreKeywords);
     
-    addScore(styles);
-    const newSelections = [...selections, value];
-    setSelections(newSelections);
-    
-    // 디버깅: 답변과 점수 추가 후 상태
-    console.log('After addScore - new selections:', newSelections);
-    
-    // 특별 분기: 질문 5-3에서 아쿠비 선택 시 테토로 전환
-    if (step === 6 && value === 'acubiSwitch') {
-      // 테토의 질문 1,2를 이미 통과한 것으로 간주
-      // 질문 0: teto 선택
-      // 질문 1: artistic 선택 (아쿠비 포함)
-      const tetoSelections = ['teto', 'artistic', ...newSelections.slice(0, -1)];
-      setSelections(tetoSelections);
-      addScore(['acubi', 'mobWife', 'rockstar', 'vampire', 'bossBabe']); // 테토 질문 1
-      addScore(['vampire', 'rockstar', 'acubi']); // 테토 질문 2
-      setStep(4); // 테토 질문 3으로 이동
-      return;
-    }
-    
-    // 남성은 7단계(질문 6개), 여성은 9단계(질문 8개)
-    const maxStep = gender === 'male' ? 7 : 9;
-    
-    console.log('Current step:', step, 'Max step:', maxStep, 'Gender:', gender);
-    
-    if (step < maxStep) {
-      setStep(step + 1);
-    } else {
+    // 다음 질문으로 이동
+    if (option.nextQuestionId === 'result_calculation') {
       calculateResult();
+    } else {
+      setCurrentQuestionId(option.nextQuestionId);
+      setStep(prev => prev + 1);
     }
   };
+
 
   const calculateResult = () => {
     let result: StyleType | null = null;
@@ -371,564 +734,16 @@ export default function QuestionFlow() {
     }
   };
 
-  const getQuestion = () => {
-    if (step < 2) return null;
-    
-    const prev = selections;
-    
-    // 남성 질문지
-    if (gender === 'male') {
-      return getMaleQuestion(step, prev);
-    }
-    
-    // 여성 질문지 (새로운 구조)
-    // 질문 1 (step 2) - 메인 분기: 에겐 vs 테토
+  // step이 2가 될 때 currentQuestionId 초기화
+  useEffect(() => {
     if (step === 2) {
-      return {
-        title: { ko: '당신은 어떤 인상을 주고 싶은가요?', en: 'What kind of impression do you want to give?' },
-        options: [
-          { text: { ko: '빛을 머금은 듯 투명하고 맑은 인상', en: 'Transparent and clear impression like holding light' }, value: 'aegen', styles: ['cleanGirl', 'softGirl', 'lightAcademia', 'darkAcademia', 'balletcore', 'moriGirl'] as StyleType[] },
-          { text: { ko: '선이 또렷하고 시크한 카리스마', en: 'Sharp and chic charisma' }, value: 'teto', styles: ['acubi', 'mobWife', 'rockstar', 'vampire', 'bossBabe'] as StyleType[] }
-        ]
-      };
-    }
-    
-    // 질문 2 (step 3) - 에겐 공통 분기
-    if (step === 3) {
-      if (prev[0] === 'aegen') {
-        return {
-          title: { ko: '당신이 원하는 전체 분위기에 더 가까운 쪽은 무엇인가요?', en: 'Which is closer to the overall atmosphere you want?' },
-          options: [
-            { text: { ko: '지적하고 세련된 단정한 인상', en: 'Intellectual and sophisticated neat impression' }, value: 'intellectual', styles: ['cleanGirl', 'lightAcademia', 'darkAcademia'] as StyleType[] },
-            { text: { ko: '따뜻하고 사랑스럽고 편안한 인상', en: 'Warm, lovely and comfortable impression' }, value: 'warm', styles: ['softGirl', 'balletcore', 'moriGirl'] as StyleType[] }
-          ]
-        };
-      } else {
-        // 테토 질문 2 - 전체 그룹 분기
-        return {
-          title: { ko: '어떤 분위기의 카리스마가 더 끌리나요?', en: 'What kind of charismatic atmosphere attracts you more?' },
-          options: [
-            { text: { ko: '강렬하고 대담한 에너지로 존재감을 드러내는 스타일', en: 'Style that reveals presence with intense and bold energy' }, value: 'bold', styles: ['mobWife', 'rockstar', 'bossBabe'] as StyleType[] },
-            { text: { ko: '서늘하거나 몽환적인 분위기로 감정을 은근히 드러내는 스타일', en: 'Style that subtly reveals emotions with cool or dreamy atmosphere' }, value: 'dreamy', styles: ['acubi', 'vampire'] as StyleType[] }
-          ]
-        };
+      if (gender === 'female' && currentQuestionId !== 'q1_start') {
+        setCurrentQuestionId('q1_start');
+      } else if (gender === 'male' && currentQuestionId !== 'm_q1_start') {
+        setCurrentQuestionId('m_q1_start');
       }
     }
-    
-    // 질문 3 (step 4) - 색감 분기
-    if (step === 4) {
-      if (prev[0] === 'aegen') {
-        if (prev[1] === 'intellectual') {
-          // 3-1: 클린걸/라이트 vs 다크
-          return {
-            title: { ko: '어떤 색감의 패션이 더 마음에 드나요?', en: 'Which color palette of fashion do you like more?' },
-            options: [
-              { text: { ko: '화이트·아이보리의 뉴트럴 색감', en: 'Neutral colors of white and ivory' }, value: 'neutral', styles: ['cleanGirl', 'lightAcademia'] as StyleType[] },
-              { text: { ko: '브라운·딥그린의 어두운 색감', en: 'Dark colors of brown and deep green' }, value: 'dark', styles: ['darkAcademia'] as StyleType[] }
-            ]
-          };
-        } else {
-          // 3-2: 소프트/발레 vs 모리걸
-          return {
-            title: { ko: '어떤 색감이 당신의 분위기와 더 잘 맞나요?', en: 'Which color palette matches your atmosphere better?' },
-            options: [
-              { text: { ko: '핑크·라벤더 같은 파스텔톤', en: 'Pastel tones like pink and lavender' }, value: 'pastel', styles: ['softGirl', 'balletcore'] as StyleType[] },
-              { text: { ko: '베이지·올리브·브라운 같은 자연톤', en: 'Natural tones like beige, olive, brown' }, value: 'natural', styles: ['moriGirl'] as StyleType[] }
-            ]
-          };
-        }
-      } else {
-        // 테토 질문 3
-        if (prev[1] === 'bold') {
-          // 3-1: 몹와이프·보스베이브 vs 락스타
-          return {
-            title: { ko: '어떤 방식으로 존재감을 드러내는 스타일이 더 좋나요?', en: 'Which style of revealing presence do you prefer more?' },
-            options: [
-              { text: { ko: '정돈된 실루엣 + 강렬한 룩', en: 'Neat silhouette + intense look' }, value: 'neatIntense', styles: ['mobWife', 'bossBabe'] as StyleType[] },
-              { text: { ko: '거친 텍스처 + 반항적인 분위기', en: 'Rough texture + rebellious atmosphere' }, value: 'roughRebel', styles: ['rockstar'] as StyleType[] }
-            ]
-          };
-        } else {
-          // 3-2: 아쿠비 vs 뱀파이어
-          return {
-            title: { ko: '어떤 피부 표현이 더 매력적으로 느껴지나요?', en: 'Which skin expression feels more attractive to you?' },
-            options: [
-              { text: { ko: '하이라이터가 은은하게 번지는 투명한 피부', en: 'Transparent skin with subtle highlighter glow' }, value: 'transparentGlow', styles: ['acubi'] as StyleType[] },
-              { text: { ko: '하얗고 차가운 느낌의 피부 표현', en: 'White and cold-feeling skin expression' }, value: 'coldWhite', styles: ['vampire'] as StyleType[] }
-            ]
-          };
-        }
-      }
-    }
-    
-    // 질문 4 (step 5) - 메이크업 분기
-    if (step === 5) {
-      if (prev[0] === 'aegen') {
-        const q2 = prev[1];
-        const q3 = prev[2];
-        
-        if (q2 === 'intellectual' && q3 === 'neutral') {
-          // 4-1: 클린 vs 라이트
-          return {
-            title: { ko: '당신이 선호하는 베이스 메이크업은 어떤가요?', en: 'What kind of base makeup do you prefer?' },
-            options: [
-              { text: { ko: '광채 나는 피부 + 투명 립밤', en: 'Glowing skin + transparent lip balm' }, value: 'glow', styles: ['cleanGirl'] as StyleType[] },
-              { text: { ko: '보송한 피부 + 매트 립 컬러', en: 'Soft skin + matte lip color' }, value: 'matte', styles: ['lightAcademia'] as StyleType[] }
-            ]
-          };
-        } else if (q2 === 'intellectual' && q3 === 'dark') {
-          // 4-2: 다크 아카데미아 분기
-          return {
-            title: { ko: '당신이 더 끌리는 메이크업 질감은 무엇인가요?', en: 'What makeup texture attracts you more?' },
-            options: [
-              { text: { ko: '광채 나는 피부 + 투명 립밤', en: 'Glowing skin + transparent lip balm' }, value: 'glowDark', styles: ['cleanGirl'] as StyleType[] },
-              { text: { ko: '매트 피부 + 음영 메이크업', en: 'Matte skin + contouring makeup' }, value: 'matteDark', styles: ['darkAcademia'] as StyleType[] }
-            ]
-          };
-        } else if (q2 === 'warm' && q3 === 'pastel') {
-          // 4-3: 소프트 vs 발레
-          return {
-            title: { ko: '어떤 메이크업 분위기가 더 잘 맞나요?', en: 'Which makeup atmosphere matches you better?' },
-            options: [
-              { text: { ko: '핑크 블러셔 + 글로시 립', en: 'Pink blush + glossy lip' }, value: 'pinkGlossy', styles: ['softGirl'] as StyleType[] },
-              { text: { ko: '맑고 윤기 나는 내추럴 톤', en: 'Clear and glossy natural tone' }, value: 'naturalGlossy', styles: ['balletcore'] as StyleType[] }
-            ]
-          };
-        } else {
-          // 4-4: 소프트 vs 모리걸
-          return {
-            title: { ko: '당신의 취향에 더 가까운 메이크업 스타일은 무엇인가요?', en: 'What makeup style is closer to your taste?' },
-            options: [
-              { text: { ko: '핑크 블러셔 + 글로시 립', en: 'Pink blush + glossy lip' }, value: 'pinkGlossyMori', styles: ['softGirl'] as StyleType[] },
-              { text: { ko: '내추럴톤 또는 민낯 메이크업', en: 'Natural tone or bare-faced makeup' }, value: 'bareFace', styles: ['moriGirl'] as StyleType[] }
-            ]
-          };
-        }
-      } else {
-        // 테토 질문 4
-        const q2 = prev[1];
-        const q3 = prev[2];
-        
-        if (q2 === 'bold' && q3 === 'neatIntense') {
-          // 4-1: 몹와이프 vs 보스베이브
-          return {
-            title: { ko: '어떤 아이메이크업 무드가 더 끌리나요?', en: 'Which eye makeup mood attracts you more?' },
-            options: [
-              { text: { ko: '진한 스모키 아이 + 긴 속눈썹', en: 'Dark smoky eye + long eyelashes' }, value: 'smokyLashes', styles: ['mobWife'] as StyleType[] },
-              { text: { ko: '음영 섀도우 + 날렵한 아이라인', en: 'Contour shadow + sharp eyeliner' }, value: 'sharpLiner', styles: ['bossBabe'] as StyleType[] }
-            ]
-          };
-        } else if (q2 === 'bold' && q3 === 'roughRebel') {
-          // 4-2: 락스타 vs 보스베이브
-          return {
-            title: { ko: '어떤 눈매 표현이 당신의 스타일에 더 맞나요?', en: 'Which eye expression matches your style better?' },
-            options: [
-              { text: { ko: '스모키 아이라인 + 지저분한 섀도우', en: 'Smoky eyeliner + messy shadow' }, value: 'messySmoky', styles: ['rockstar'] as StyleType[] },
-              { text: { ko: '음영 섀도우 + 날렵한 아이라인', en: 'Contour shadow + sharp eyeliner' }, value: 'sharpLinerRock', styles: ['bossBabe'] as StyleType[] }
-            ]
-          };
-        } else {
-          // 4-3: 아쿠비 vs 뱀파이어
-          return {
-            title: { ko: '어떤 립 메이크업이 더 취향에 맞나요?', en: 'Which lip makeup matches your taste better?' },
-            options: [
-              { text: { ko: '촉촉한 립글로스나 유리알 같은 립', en: 'Moist lip gloss or glass-like lip' }, value: 'glossyLip', styles: ['acubi'] as StyleType[] },
-              { text: { ko: '딥버건디·와인 같은 짙은 레드 립', en: 'Deep burgundy or wine-like dark red lip' }, value: 'deepRed', styles: ['vampire'] as StyleType[] }
-            ]
-          };
-        }
-      }
-    }
-    
-    // 질문 5 (step 6) - 패션 스타일 분기
-    if (step === 6) {
-      if (prev[0] === 'aegen') {
-        const q2 = prev[1];
-        const q3 = prev[2];
-        const q4 = prev[3];
-        
-        if (q2 === 'intellectual' && q3 === 'neutral' && q4 === 'glow') {
-          // 5-1: 클린 vs 라이트
-          return {
-            title: { ko: '어떤 스타일에 더 편안함을 느끼나요?', en: 'Which style makes you feel more comfortable?' },
-            options: [
-              { text: { ko: '화이트 셔츠 + 블랙 팬츠의 미니멀 룩', en: 'Minimal look of white shirt + black pants' }, value: 'minimal', styles: ['cleanGirl'] as StyleType[] },
-              { text: { ko: '아이보리 니트 + 플리츠 스커트의 클래식 룩', en: 'Classic look of ivory knit + pleated skirt' }, value: 'classic', styles: ['lightAcademia'] as StyleType[] }
-            ]
-          };
-        } else if (q2 === 'intellectual' && q3 === 'neutral' && q4 === 'matte') {
-          // 5-1: 클린 vs 라이트 (라이트 선택)
-          return {
-            title: { ko: '어떤 스타일에 더 편안함을 느끼나요?', en: 'Which style makes you feel more comfortable?' },
-            options: [
-              { text: { ko: '화이트 셔츠 + 블랙 팬츠의 미니멀 룩', en: 'Minimal look of white shirt + black pants' }, value: 'minimal', styles: ['cleanGirl'] as StyleType[] },
-              { text: { ko: '아이보리 니트 + 플리츠 스커트의 클래식 룩', en: 'Classic look of ivory knit + pleated skirt' }, value: 'classic', styles: ['lightAcademia'] as StyleType[] }
-            ]
-          };
-        } else if (q2 === 'intellectual' && q3 === 'dark' && q4 === 'glowDark') {
-          // 5-2: 클린 vs 다크
-          return {
-            title: { ko: '어떤 무드가 더 끌리나요?', en: 'Which mood attracts you more?' },
-            options: [
-              { text: { ko: '미니멀한 기본템 스타일', en: 'Minimal basic item style' }, value: 'minimalDark', styles: ['cleanGirl'] as StyleType[] },
-              { text: { ko: '셔츠·니트 베스트·트렌치의 고전적 레이어드', en: 'Classic layered with shirt, knit vest, trench' }, value: 'layeredDark', styles: ['darkAcademia'] as StyleType[] }
-            ]
-          };
-        } else if (q2 === 'intellectual' && q3 === 'dark' && q4 === 'matteDark') {
-          // 5-2: 클린 vs 다크 (다크 선택)
-          return {
-            title: { ko: '어떤 무드가 더 끌리나요?', en: 'Which mood attracts you more?' },
-            options: [
-              { text: { ko: '미니멀한 기본템 스타일', en: 'Minimal basic item style' }, value: 'minimalDark', styles: ['cleanGirl'] as StyleType[] },
-              { text: { ko: '셔츠·니트 베스트·트렌치의 고전적 레이어드', en: 'Classic layered with shirt, knit vest, trench' }, value: 'layeredDark', styles: ['darkAcademia'] as StyleType[] }
-            ]
-          };
-        } else if (q2 === 'warm' && q3 === 'pastel' && q4 === 'pinkGlossy') {
-          // 5-3: 소프트 vs 발레
-          return {
-            title: { ko: '어떤 디테일이 당신의 취향에 더 가깝나요?', en: 'Which detail is closer to your taste?' },
-            options: [
-              { text: { ko: '리본/하트/프릴 같은 귀여운 디테일', en: 'Cute details like ribbon, heart, frill' }, value: 'cuteDetail', styles: ['softGirl'] as StyleType[] },
-              { text: { ko: '튤·리본·타이츠 같은 발레웨어 디테일', en: 'Balletwear details like tulle, ribbon, tights' }, value: 'balletDetail', styles: ['balletcore'] as StyleType[] }
-            ]
-          };
-        } else if (q2 === 'warm' && q3 === 'pastel' && q4 === 'naturalGlossy') {
-          // 5-3: 소프트 vs 발레 (발레 선택)
-          return {
-            title: { ko: '어떤 디테일이 당신의 취향에 더 가깝나요?', en: 'Which detail is closer to your taste?' },
-            options: [
-              { text: { ko: '리본/하트/프릴 같은 귀여운 디테일', en: 'Cute details like ribbon, heart, frill' }, value: 'cuteDetail', styles: ['softGirl'] as StyleType[] },
-              { text: { ko: '튤·리본·타이츠 같은 발레웨어 디테일', en: 'Balletwear details like tulle, ribbon, tights' }, value: 'balletDetail', styles: ['balletcore'] as StyleType[] }
-            ]
-          };
-        } else {
-          // 5-4: 소프트 vs 모리걸
-          return {
-            title: { ko: '어떤 패션 무드가 더 끌리나요?', en: 'Which fashion mood attracts you more?' },
-            options: [
-              { text: { ko: '귀여운 디테일의 러블리 스타일', en: 'Lovely style with cute details' }, value: 'lovelyStyle', styles: ['softGirl'] as StyleType[] },
-              { text: { ko: '린넨 원피스·가디건 같은 편안한 내추럴 룩', en: 'Comfortable natural look like linen dress and cardigan' }, value: 'naturalLook', styles: ['moriGirl'] as StyleType[] }
-            ]
-          };
-        }
-      } else {
-        // 테토 질문 5
-        const q2 = prev[1];
-        const q3 = prev[2];
-        const q4 = prev[3];
-        
-        if (q2 === 'bold' && q3 === 'neatIntense' && q4 === 'smokyLashes') {
-          // 5-1: 몹와이프 vs 보스베이브
-          return {
-            title: { ko: '어떤 헤어 분위기를 더 선호하나요?', en: 'Which hair atmosphere do you prefer more?' },
-            options: [
-              { text: { ko: '윤기 나는 블랙 헤어나 펌 스타일', en: 'Glossy black hair or perm style' }, value: 'glossyBlack', styles: ['mobWife'] as StyleType[] },
-              { text: { ko: '깔끔하게 묶은 포니테일·슬릭 헤어', en: 'Neatly tied ponytail or slick hair' }, value: 'slickPony', styles: ['bossBabe'] as StyleType[] }
-            ]
-          };
-        } else if (q2 === 'bold' && q3 === 'roughRebel' && q4 === 'messySmoky') {
-          // 5-2: 락스타 vs 보스베이브
-          return {
-            title: { ko: '어떤 꾸안꾸 헤어 무드에 더 끌리나요?', en: 'Which effortless hair mood attracts you more?' },
-            options: [
-              { text: { ko: '무심하게 헝클어진 헤어', en: 'Carelessly tousled hair' }, value: 'tousled', styles: ['rockstar'] as StyleType[] },
-              { text: { ko: '단정하고 슬릭한 포니테일/업스타일', en: 'Neat and slick ponytail or upstyle' }, value: 'slickUpdo', styles: ['bossBabe'] as StyleType[] }
-            ]
-          };
-        } else if (q2 === 'bold' && q3 === 'neatIntense' && q4 === 'sharpLiner') {
-          // 5-1: 몹와이프 vs 보스베이브 (보스베이브 선택)
-          return {
-            title: { ko: '어떤 헤어 분위기를 더 선호하나요?', en: 'Which hair atmosphere do you prefer more?' },
-            options: [
-              { text: { ko: '윤기 나는 블랙 헤어나 펌 스타일', en: 'Glossy black hair or perm style' }, value: 'glossyBlack', styles: ['mobWife'] as StyleType[] },
-              { text: { ko: '깔끔하게 묶은 포니테일·슬릭 헤어', en: 'Neatly tied ponytail or slick hair' }, value: 'slickPony', styles: ['bossBabe'] as StyleType[] }
-            ]
-          };
-        } else if (q2 === 'bold' && q3 === 'roughRebel' && q4 === 'sharpLinerRock') {
-          // 5-2: 락스타 vs 보스베이브 (보스베이브 선택)
-          return {
-            title: { ko: '어떤 꾸안꾸 헤어 무드에 더 끌리나요?', en: 'Which effortless hair mood attracts you more?' },
-            options: [
-              { text: { ko: '무심하게 헝클어진 헤어', en: 'Carelessly tousled hair' }, value: 'tousled', styles: ['rockstar'] as StyleType[] },
-              { text: { ko: '단정하고 슬릭한 포니테일/업스타일', en: 'Neat and slick ponytail or upstyle' }, value: 'slickUpdo', styles: ['bossBabe'] as StyleType[] }
-            ]
-          };
-        } else {
-          // 5-3: 아쿠비 vs 뱀파이어
-          return {
-            title: { ko: '어떤 옷의 실루엣이 더 마음에 드나요?', en: 'Which clothing silhouette do you like more?' },
-            options: [
-              { text: { ko: '퍼지한 파스텔 볼레로나 루즈한 니트', en: 'Fuzzy pastel bolero or loose knit' }, value: 'fuzzyLoose', styles: ['acubi'] as StyleType[] },
-              { text: { ko: '레이스·벨벳 등 고딕한 디테일의 의상', en: 'Clothing with gothic details like lace and velvet' }, value: 'gothicDetail', styles: ['vampire'] as StyleType[] }
-            ]
-          };
-        }
-      }
-    }
-    
-    // 질문 6 (step 7) - 헤어스타일 분기
-    if (step === 7) {
-      if (prev[0] === 'aegen') {
-        const q2 = prev[1];
-        const q3 = prev[2];
-        const q4 = prev[3];
-        const q5 = prev[4];
-        
-        if (q2 === 'intellectual' && q3 === 'neutral' && (q4 === 'glow' || q4 === 'matte') && (q5 === 'minimal' || q5 === 'classic')) {
-          // 6-1: 클린 vs 라이트
-          return {
-            title: { ko: '어떤 헤어 분위기가 더 마음에 드나요?', en: 'Which hair atmosphere do you like more?' },
-            options: [
-              { text: { ko: '올백·미니 클로우클립 등 깔끔한 업스타일', en: 'Neat upstyle like slicked back or mini claw clip' }, value: 'upstyle', styles: ['cleanGirl'] as StyleType[] },
-              { text: { ko: '자연스러운 웨이브·반묶음', en: 'Natural wave or half-up' }, value: 'wave', styles: ['lightAcademia'] as StyleType[] }
-            ]
-          };
-        } else if (q2 === 'intellectual' && q3 === 'dark' && (q4 === 'glowDark' || q4 === 'matteDark') && (q5 === 'minimalDark' || q5 === 'layeredDark')) {
-          // 6-2: 클린 vs 다크
-          return {
-            title: { ko: '어떤 헤어 스타일이 더 나다운가요?', en: 'Which hair style is more like you?' },
-            options: [
-              { text: { ko: '깔끔한 업스타일', en: 'Neat upstyle' }, value: 'upstyleDark', styles: ['cleanGirl'] as StyleType[] },
-              { text: { ko: '자연스러운 웨이브 또는 반묶음', en: 'Natural wave or half-up' }, value: 'waveDark', styles: ['darkAcademia'] as StyleType[] }
-            ]
-          };
-        } else if (q2 === 'warm' && q3 === 'pastel' && (q4 === 'pinkGlossy' || q4 === 'naturalGlossy') && (q5 === 'cuteDetail' || q5 === 'balletDetail')) {
-          // 6-3: 소프트 vs 발레
-          return {
-            title: { ko: '당신에게 더 잘 어울린다고 느끼는 헤어스타일은 무엇인가요?', en: 'What hairstyle do you feel suits you better?' },
-            options: [
-              { text: { ko: '자연 웨이브·낮은 묶음', en: 'Natural wave or low bun' }, value: 'naturalWave', styles: ['softGirl'] as StyleType[] },
-              { text: { ko: '번 헤어나 깔끔한 올림머리', en: 'Bun hair or neat updo' }, value: 'bunUpdo', styles: ['balletcore'] as StyleType[] }
-            ]
-          };
-        } else if (q2 === 'warm' && q3 === 'natural' && (q4 === 'pinkGlossyMori' || q4 === 'bareFace') && (q5 === 'lovelyStyle' || q5 === 'naturalLook')) {
-          // 6-4: 발레 vs 모리걸
-          return {
-            title: { ko: '더 선호하는 헤어 분위기는 무엇인가요?', en: 'What hair atmosphere do you prefer more?' },
-            options: [
-              { text: { ko: '깔끔한 번/올림머리', en: 'Neat bun or updo' }, value: 'bunUpdoMori', styles: ['balletcore'] as StyleType[] },
-              { text: { ko: '긴 생머리·낮은 묶음', en: 'Long straight hair or low bun' }, value: 'longStraight', styles: ['moriGirl'] as StyleType[] }
-            ]
-          };
-        } else {
-          return null;
-        }
-      } else {
-        // 테토 질문 6
-        const q2 = prev[1];
-        const q3 = prev[2];
-        const q4 = prev[3];
-        const q5 = prev[4];
-        
-        if (q2 === 'bold' && q3 === 'neatIntense' && (q4 === 'smokyLashes' || q4 === 'sharpLiner') && (q5 === 'glossyBlack' || q5 === 'slickPony')) {
-          // 6-1: 몹와이프 vs 보스베이브
-          return {
-            title: { ko: '어떤 패션 아이템이 더 끌리나요?', en: 'Which fashion item attracts you more?' },
-            options: [
-              { text: { ko: '퍼 코트·레오파드 등 존재감 강한 아이템', en: 'Items with strong presence like fur coat and leopard' }, value: 'strongPresence', styles: ['mobWife'] as StyleType[] },
-              { text: { ko: '핏이 완벽한 테일러드 수트', en: 'Perfectly fitted tailored suit' }, value: 'tailoredSuit', styles: ['bossBabe'] as StyleType[] }
-            ]
-          };
-        } else if (q2 === 'bold' && q3 === 'roughRebel' && (q4 === 'messySmoky' || q4 === 'sharpLinerRock') && (q5 === 'tousled' || q5 === 'slickUpdo')) {
-          // 6-2: 락스타 vs 보스베이브
-          return {
-            title: { ko: '어떤 분위기의 옷이 더 마음에 드나요?', en: 'Which atmosphere of clothing do you like more?' },
-            options: [
-              { text: { ko: '가죽 재킷·밴드 티 등 거친 옷', en: 'Rough clothes like leather jacket and band tee' }, value: 'roughClothes', styles: ['rockstar'] as StyleType[] },
-              { text: { ko: '테일러 수트처럼 단정한 실루엣', en: 'Neat silhouette like tailored suit' }, value: 'neatSilhouette', styles: ['bossBabe'] as StyleType[] }
-            ]
-          };
-        } else {
-          // 6-3: 아쿠비 vs 뱀파이어
-          return {
-            title: { ko: '어떤 눈매 분위기가 당신에게 더 맞나요?', en: 'Which eye atmosphere matches you better?' },
-            options: [
-              { text: { ko: '섬세하고 유리 같은 눈동자', en: 'Delicate and glass-like eyes' }, value: 'glassEyes', styles: ['acubi'] as StyleType[] },
-              { text: { ko: '날카로운 아이라인 + 강렬한 속눈썹', en: 'Sharp eyeliner + intense eyelashes' }, value: 'sharpIntense', styles: ['vampire'] as StyleType[] }
-            ]
-          };
-        }
-      }
-    }
-    
-    // 질문 7 (step 8) - 가방/메이크업 포인트 분기
-    if (step === 8) {
-      if (prev[0] === 'aegen') {
-        const q2 = prev[1];
-        const q3 = prev[2];
-        const q4 = prev[3];
-        const q5 = prev[4];
-        const q6 = prev[5];
-        
-        if (q2 === 'intellectual' && q3 === 'neutral' && (q4 === 'glow' || q4 === 'matte') && (q5 === 'minimal' || q5 === 'classic') && (q6 === 'upstyle' || q6 === 'wave')) {
-          // 7-1: 클린 vs 라이트
-          return {
-            title: { ko: '어떤 가방 스타일이 더 마음에 드나요?', en: 'Which bag style do you like more?' },
-            options: [
-              { text: { ko: '작은 미니백', en: 'Small mini bag' }, value: 'miniBag', styles: ['cleanGirl'] as StyleType[] },
-              { text: { ko: '책이 들어가는 가죽 크로스백', en: 'Leather crossbody bag that fits books' }, value: 'crossbody', styles: ['lightAcademia'] as StyleType[] }
-            ]
-          };
-        } else if (q2 === 'intellectual' && q3 === 'dark' && (q4 === 'glowDark' || q4 === 'matteDark') && (q5 === 'minimalDark' || q5 === 'layeredDark') && (q6 === 'upstyleDark' || q6 === 'waveDark')) {
-          // 7-2: 클린 vs 다크
-          return {
-            title: { ko: '어떤 가방 분위기가 당신과 더 잘 맞나요?', en: 'Which bag atmosphere matches you better?' },
-            options: [
-              { text: { ko: '작은 미니백', en: 'Small mini bag' }, value: 'miniBagDark', styles: ['cleanGirl'] as StyleType[] },
-              { text: { ko: '빈티지한 가죽가방', en: 'Vintage leather bag' }, value: 'vintageBag', styles: ['darkAcademia'] as StyleType[] }
-            ]
-          };
-        } else if (q2 === 'warm' && q3 === 'pastel' && (q4 === 'pinkGlossy' || q4 === 'naturalGlossy') && (q5 === 'cuteDetail' || q5 === 'balletDetail') && (q6 === 'naturalWave' || q6 === 'bunUpdo')) {
-          // 7-3: 소프트 vs 발레
-          return {
-            title: { ko: '어떤 메이크업 포인트가 더 끌리나요?', en: 'Which makeup point attracts you more?' },
-            options: [
-              { text: { ko: '속눈썹 강조 메이크업', en: 'Eyelash emphasizing makeup' }, value: 'lashes', styles: ['softGirl'] as StyleType[] },
-              { text: { ko: '눈가의 은은한 펄 포인트', en: 'Subtle pearl point around eyes' }, value: 'pearl', styles: ['balletcore'] as StyleType[] }
-            ]
-          };
-        } else if (q2 === 'warm' && q3 === 'natural' && (q4 === 'pinkGlossyMori' || q4 === 'bareFace') && (q5 === 'lovelyStyle' || q5 === 'naturalLook') && (q6 === 'bunUpdoMori' || q6 === 'longStraight')) {
-          // 7-4: 클린 vs 모리걸
-          return {
-            title: { ko: '어떤 가방 스타일이 더 잘 맞나요?', en: 'Which bag style matches you better?' },
-            options: [
-              { text: { ko: '작은 미니백', en: 'Small mini bag' }, value: 'miniBagMori', styles: ['cleanGirl'] as StyleType[] },
-              { text: { ko: '코튼백·수공예 가방', en: 'Cotton bag or handmade bag' }, value: 'cottonBag', styles: ['moriGirl'] as StyleType[] }
-            ]
-          };
-        } else {
-          return null;
-        }
-      } else {
-        // 테토 질문 7
-        const q2 = prev[1];
-        const q3 = prev[2];
-        const q4 = prev[3];
-        const q5 = prev[4];
-        const q6 = prev[5];
-        
-        if (q2 === 'bold' && q3 === 'neatIntense' && (q4 === 'smokyLashes' || q4 === 'sharpLiner') && (q5 === 'glossyBlack' || q5 === 'slickPony') && (q6 === 'strongPresence' || q6 === 'tailoredSuit')) {
-          // 7-1: 몹와이프 vs 보스베이브
-          return {
-            title: { ko: '선호하는 주얼리 무드는 어떤가요?', en: 'What kind of jewelry mood do you prefer?' },
-            options: [
-              { text: { ko: '진한 골드 주얼리 + 글램 분위기', en: 'Deep gold jewelry + glam atmosphere' }, value: 'goldGlam', styles: ['mobWife'] as StyleType[] },
-              { text: { ko: '심플하지만 고급스러운 주얼리', en: 'Simple but luxurious jewelry' }, value: 'simpleLuxury', styles: ['bossBabe'] as StyleType[] }
-            ]
-          };
-        } else if (q2 === 'bold' && q3 === 'roughRebel' && (q4 === 'messySmoky' || q4 === 'sharpLinerRock') && (q5 === 'tousled' || q5 === 'slickUpdo') && (q6 === 'roughClothes' || q6 === 'neatSilhouette')) {
-          // 7-2: 락스타 vs 보스베이브
-          return {
-            title: { ko: '어떤 액세서리를 더 선호하나요?', en: 'Which accessory do you prefer more?' },
-            options: [
-              { text: { ko: '볼드한 피어싱·체인 액세서리', en: 'Bold piercing and chain accessories' }, value: 'boldPiercing', styles: ['rockstar'] as StyleType[] },
-              { text: { ko: '심플하고 세련된 주얼리', en: 'Simple and sophisticated jewelry' }, value: 'sophisticated', styles: ['bossBabe'] as StyleType[] }
-            ]
-          };
-        } else {
-          // 7-3: 아쿠비 vs 뱀파이어
-          return {
-            title: { ko: '어떤 메이크업 색조 조합이 더 끌리나요?', en: 'Which makeup color combination attracts you more?' },
-            options: [
-              { text: { ko: '핑크 + 실버 조합', en: 'Pink + silver combination' }, value: 'pinkSilver', styles: ['acubi'] as StyleType[] },
-              { text: { ko: '피처럼 붉은 립·네일', en: 'Blood-like red lip and nail' }, value: 'bloodRed', styles: ['vampire'] as StyleType[] }
-            ]
-          };
-        }
-      }
-    }
-    
-    // 질문 8 (step 9) - 최종 인상 분기
-    if (step === 9) {
-      if (prev[0] === 'aegen') {
-        const q2 = prev[1];
-        const q3 = prev[2];
-        const q4 = prev[3];
-        const q5 = prev[4];
-        const q6 = prev[5];
-        const q7 = prev[6];
-        
-        if (q2 === 'intellectual' && q3 === 'neutral' && (q4 === 'glow' || q4 === 'matte') && (q5 === 'minimal' || q5 === 'classic') && (q6 === 'upstyle' || q6 === 'wave') && (q7 === 'miniBag' || q7 === 'crossbody')) {
-          // 8-1: 클린 vs 라이트
-          return {
-            title: { ko: '어떤 인상으로 보이고 싶나요?', en: 'What impression do you want to give?' },
-            options: [
-              { text: { ko: '깔끔하고 맑은 이미지', en: 'Neat and clear image' }, value: 'clear', styles: ['cleanGirl'] as StyleType[] },
-              { text: { ko: '따뜻하고 지적인 이미지', en: 'Warm and intellectual image' }, value: 'warmIntellectual', styles: ['lightAcademia'] as StyleType[] }
-            ]
-          };
-        } else if (q2 === 'intellectual' && q3 === 'dark' && (q4 === 'glowDark' || q4 === 'matteDark') && (q5 === 'minimalDark' || q5 === 'layeredDark') && (q6 === 'upstyleDark' || q6 === 'waveDark') && (q7 === 'miniBagDark' || q7 === 'vintageBag')) {
-          // 8-2: 클린 vs 다크
-          return {
-            title: { ko: '어떤 첫인상을 더 원하나요?', en: 'What first impression do you want more?' },
-            options: [
-              { text: { ko: '맑고 단정한 이미지', en: 'Clear and neat image' }, value: 'clearNeat', styles: ['cleanGirl'] as StyleType[] },
-              { text: { ko: '지적이고 약간 미스터리한 이미지', en: 'Intellectual and slightly mysterious image' }, value: 'mysterious', styles: ['darkAcademia'] as StyleType[] }
-            ]
-          };
-        } else if (q2 === 'warm' && q3 === 'pastel' && (q4 === 'pinkGlossy' || q4 === 'naturalGlossy') && (q5 === 'cuteDetail' || q5 === 'balletDetail') && (q6 === 'naturalWave' || q6 === 'bunUpdo') && (q7 === 'lashes' || q7 === 'pearl')) {
-          // 8-3: 소프트 vs 발레
-          return {
-            title: { ko: '어떤 인상이 더 당신의 성향에 가깝나요?', en: 'Which impression is closer to your tendency?' },
-            options: [
-              { text: { ko: '사랑스럽고 부드러운 이미지', en: 'Lovely and soft image' }, value: 'lovelySoft', styles: ['softGirl'] as StyleType[] },
-              { text: { ko: '우아하고 품격 있는 이미지', en: 'Elegant and dignified image' }, value: 'elegant', styles: ['balletcore'] as StyleType[] }
-            ]
-          };
-        } else if (q2 === 'warm' && q3 === 'natural' && (q4 === 'pinkGlossyMori' || q4 === 'bareFace') && (q5 === 'lovelyStyle' || q5 === 'naturalLook') && (q6 === 'bunUpdoMori' || q6 === 'longStraight') && (q7 === 'miniBagMori' || q7 === 'cottonBag')) {
-          // 8-4: 소프트 vs 모리걸
-          return {
-            title: { ko: '어떤 분위기로 보이고 싶나요?', en: 'What atmosphere do you want to show?' },
-            options: [
-              { text: { ko: '사랑스럽고 부드러운 사람', en: 'Lovely and soft person' }, value: 'lovelyPerson', styles: ['softGirl'] as StyleType[] },
-              { text: { ko: '자연스럽고 따뜻한 사람', en: 'Natural and warm person' }, value: 'naturalWarm', styles: ['moriGirl'] as StyleType[] }
-            ]
-          };
-        } else {
-          return null;
-        }
-      } else {
-        // 테토 질문 8
-        const q2 = prev[1];
-        const q3 = prev[2];
-        const q4 = prev[3];
-        const q5 = prev[4];
-        const q6 = prev[5];
-        const q7 = prev[6];
-        
-        if (q2 === 'bold' && q3 === 'neatIntense' && (q4 === 'smokyLashes' || q4 === 'sharpLiner') && (q5 === 'glossyBlack' || q5 === 'slickPony') && (q6 === 'strongPresence' || q6 === 'tailoredSuit') && (q7 === 'goldGlam' || q7 === 'simpleLuxury')) {
-          // 8-1: 몹와이프 vs 보스베이브
-          return {
-            title: { ko: '어떤 인상에 더 가까워지고 싶나요?', en: 'What impression do you want to get closer to?' },
-            options: [
-              { text: { ko: '자신감 넘치고 관능적인 여성스러움', en: 'Confident and sensual femininity' }, value: 'sensual', styles: ['mobWife'] as StyleType[] },
-              { text: { ko: '성공한 여성의 여유가 느껴지는 세련됨', en: 'Sophistication that feels like a successful woman\'s ease' }, value: 'sophisticatedEase', styles: ['bossBabe'] as StyleType[] }
-            ]
-          };
-        } else if (q2 === 'bold' && q3 === 'roughRebel' && (q4 === 'messySmoky' || q4 === 'sharpLinerRock') && (q5 === 'tousled' || q5 === 'slickUpdo') && (q6 === 'roughClothes' || q6 === 'neatSilhouette') && (q7 === 'boldPiercing' || q7 === 'sophisticated')) {
-          // 8-2: 락스타 vs 보스베이브
-          return {
-            title: { ko: '어떤 분위기가 당신에게 더 매력적이라고 느껴지나요?', en: 'Which atmosphere feels more attractive to you?' },
-            options: [
-              { text: { ko: '거칠지만 자신감 있는 반항적 무드', en: 'Rough but confident rebellious mood' }, value: 'rebellious', styles: ['rockstar'] as StyleType[] },
-              { text: { ko: '도시적이고 정돈된 세련된 스타일', en: 'Urban and neat sophisticated style' }, value: 'urbanNeat', styles: ['bossBabe'] as StyleType[] }
-            ]
-          };
-        } else {
-          // 8-3: 아쿠비 vs 뱀파이어
-          return {
-            title: { ko: '어떤 감정선을 가진 분위기가 더 끌리나요?', en: 'Which atmosphere with emotional line attracts you more?' },
-            options: [
-              { text: { ko: '차분하지만 어딘가 쓸쓸한 분위기', en: 'Calm but somehow lonely atmosphere' }, value: 'lonely', styles: ['acubi'] as StyleType[] },
-              { text: { ko: '차가운 아름다움 속의 강한 긴장감', en: 'Strong tension within cold beauty' }, value: 'coldTension', styles: ['vampire'] as StyleType[] }
-            ]
-          };
-        }
-      }
-    }
-    
-    return null;
-  };
+  }, [step, gender]);
 
   const currentQuestion = getQuestion();
   const isStep0Valid = age !== '' && gender !== '';
@@ -1061,7 +876,7 @@ export default function QuestionFlow() {
                   {currentQuestion.options.map((option, idx) => (
                     <button
                       key={idx}
-                      onClick={() => handleAnswer(option.value, option.styles)}
+                      onClick={() => handleAnswerLinked(option as QuestionOption)}
                       className="w-full text-left p-4 rounded-xl border border-softSage/35 bg-white hover-mouse:bg-summerBeige/30 hover-mouse:border-softSage/50 hover-mouse:shadow-md active:bg-summerBeige/40 active:scale-[0.99] transition-all duration-200"
                     >
                       <span className="text-sm sm:text-base leading-relaxed">{option.text[lang]}</span>
@@ -1072,8 +887,9 @@ export default function QuestionFlow() {
                   <button 
                     type="button" 
                     onClick={() => {
+                      // Linked List 방식 - 이전 질문 ID로 돌아가기
+                      // 간단하게 step만 감소 (이전 질문 ID 추적은 향후 구현 가능)
                       setStep(Math.max(0, step - 1));
-                      setSelections(selections.slice(0, -1));
                     }}
                     className="text-sm opacity-70 hover:opacity-100 transition"
                   >
