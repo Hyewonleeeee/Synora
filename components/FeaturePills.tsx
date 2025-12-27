@@ -13,8 +13,8 @@ const features = [
 export default function FeaturePills() {
   const { t, lang } = useLanguage();
   return (
-    <section className="mx-auto max-w-5xl px-4 sm:px-6 pb-14 sm:pb-20" aria-label="Key features">
-      <ul className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+    <section className="mx-auto max-w-4xl px-4 sm:px-6 pb-8 sm:pb-12" aria-label="Key features">
+      <ul className="grid grid-cols-3 gap-3 sm:gap-4">
         {features.map((f, i) => (
           <motion.li
             key={f.titleKey}
@@ -22,12 +22,12 @@ export default function FeaturePills() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.35, delay: 0.15 * i }}
-            className="rounded-2xl bg-white/75 backdrop-blur ring-1 ring-softSage/25 shadow-wood p-5 flex items-start gap-3 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white/85 hover:ring-softSage/35"
+            className="glass-card rounded-xl p-3 sm:p-4 flex flex-col items-center text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white/15"
           >
-            <f.icon className="h-5 w-5 text-slateInk/70" aria-hidden="true" />
+            <f.icon className="h-4 w-4 sm:h-5 sm:w-5 text-white/90 mb-2" aria-hidden="true" />
             <div>
-              <h3 className="font-medium">{t(f.titleKey)}</h3>
-              <p className={`text-sm opacity-80 mt-1 ${lang === 'en' && f.descKey === 'pill3Desc' ? 'whitespace-nowrap' : ''}`}>{t(f.descKey)}</p>
+              <h3 className="font-semibold text-white text-xs sm:text-sm">{t(f.titleKey)}</h3>
+              <p className={`text-xs opacity-90 mt-1 text-white leading-tight font-normal ${lang === 'en' && f.descKey === 'pill3Desc' ? 'whitespace-nowrap' : ''}`}>{t(f.descKey)}</p>
             </div>
           </motion.li>
         ))}

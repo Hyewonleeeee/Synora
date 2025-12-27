@@ -751,7 +751,7 @@ export default function QuestionFlow() {
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 sm:px-0 py-10">
-      <div className="rounded-2xl bg-white/80 backdrop-blur ring-1 ring-warmBrown/10 shadow-wood p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white/90 hover:ring-softSage/20">
+      <div className="glass-question-box rounded-2xl p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
         {isCalculating && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
             <div className="rounded-2xl bg-white/90 ring-1 ring-warmBrown/10 shadow-wood px-6 py-5">
@@ -782,31 +782,31 @@ export default function QuestionFlow() {
           <motion.div key={step} variants={fadeVariants} initial="initial" animate="animate" exit="exit">
             {step === 0 && (
               <div className="space-y-5">
-                <h2 className="text-lg sm:text-xl font-medium mb-6">{t('step1Title')}</h2>
+                <h2 className="text-lg sm:text-xl font-semibold mb-6 text-white">{t('step1Title')}</h2>
                 <div>
-                  <label htmlFor="age" className="block text-sm font-medium">{t('age')}</label>
+                  <label htmlFor="age" className="block text-sm font-medium text-white">{t('age')}</label>
                   <select
                     id="age"
                     value={age}
                     onChange={(e) => setAge(e.target.value)}
-                    className="mt-2 w-full h-11 rounded-xl border border-softSage/35 bg-white px-3 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-softSage transition-all duration-200 hover:border-softSage/50 hover:shadow-md"
+                    className="mt-2 w-full h-11 rounded-xl border border-white/20 bg-white/10 backdrop-blur-md px-3 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 transition-all duration-200 hover:border-white/30 hover:shadow-md text-white"
                   >
-                    <option value="" disabled>{t('select')}</option>
-                    <option value="10대">10대</option>
-                    <option value="20대">20대</option>
-                    <option value="30대">30대</option>
-                    <option value="40대">40대</option>
-                    <option value="50대 이상">50대 이상</option>
+                    <option value="" disabled className="text-gray-800">{t('select')}</option>
+                    <option value="10대" className="text-gray-800">10대</option>
+                    <option value="20대" className="text-gray-800">20대</option>
+                    <option value="30대" className="text-gray-800">30대</option>
+                    <option value="40대" className="text-gray-800">40대</option>
+                    <option value="50대 이상" className="text-gray-800">50대 이상</option>
                   </select>
                 </div>
                 <div>
                   <fieldset>
-                    <legend className="block text-sm font-medium">{t('gender')}</legend>
+                    <legend className="block text-sm font-medium text-white">{t('gender')}</legend>
                     <div className="mt-2 grid grid-cols-2 gap-2">
                       {(['female', 'male'] as const).map((g) => (
                         <label 
                           key={g}
-                          className="inline-flex items-center gap-2 rounded-xl border border-softSage/35 bg-white px-3 py-2 shadow-sm transition-all duration-200 hover:border-softSage/50 hover:shadow-md hover:bg-summerBeige/30 cursor-pointer"
+                          className="glass-button inline-flex items-center gap-2 rounded-xl px-3 py-2 cursor-pointer text-white"
                         >
                           <input
                             type="radio"
@@ -814,9 +814,9 @@ export default function QuestionFlow() {
                             value={g}
                             checked={gender === g}
                             onChange={(e) => setGender(e.target.value)}
-                            className="accent-forestGreen"
+                            className="accent-white"
                           />
-                          <span>{t(g)}</span>
+                          <span className="font-normal">{t(g)}</span>
                         </label>
                       ))}
                     </div>
@@ -827,7 +827,7 @@ export default function QuestionFlow() {
                     type="button"
                     onClick={() => setStep(1)}
                     disabled={!isStep0Valid}
-                    className="inline-flex items-center justify-center rounded-xl bg-forestGreen text-lightMint px-5 py-2 text-sm font-medium shadow-soft enabled:hover:scale-[1.01] transition disabled:opacity-50"
+                    className="glass-button-primary inline-flex items-center justify-center rounded-xl px-5 py-2 text-sm font-medium enabled:hover:scale-[1.01] transition disabled:opacity-50"
                   >
                     {t('next')}
                   </button>
@@ -837,29 +837,29 @@ export default function QuestionFlow() {
 
             {step === 1 && (
               <div>
-                <h2 className="text-lg sm:text-xl font-medium mb-6">{t('step2Title')}</h2>
-                <label htmlFor="mbti" className="block text-sm font-medium">{t('mbti')}</label>
+                <h2 className="text-lg sm:text-xl font-semibold mb-6 text-white">{t('step2Title')}</h2>
+                <label htmlFor="mbti" className="block text-sm font-medium text-white">{t('mbti')}</label>
                 <select
                   id="mbti"
                   value={mbti}
                   onChange={(e) => setMbti(e.target.value)}
-                  className="mt-2 w-full h-11 rounded-xl border border-softSage/35 bg-white px-3 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-softSage transition-all duration-200 hover:border-softSage/50 hover:shadow-md"
+                  className="mt-2 w-full h-11 rounded-xl border border-white/20 bg-white/10 backdrop-blur-md px-3 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 transition-all duration-200 hover:border-white/30 hover:shadow-md text-white"
                 >
-                  <option value="" disabled>{t('select')}</option>
-                  <option value="선택안함">선택안함</option>
+                  <option value="" disabled className="text-gray-800">{t('select')}</option>
+                  <option value="선택안함" className="text-gray-800">선택안함</option>
                   {['INTJ','INTP','ENTJ','ENTP','INFJ','INFP','ENFJ','ENFP','ISTJ','ISFJ','ESTJ','ESFJ','ISTP','ISFP','ESTP','ESFP'].map(type => (
-                    <option key={type} value={type}>{type}</option>
+                    <option key={type} value={type} className="text-gray-800">{type}</option>
                   ))}
                 </select>
                 <div className="mt-6 flex items-center justify-between">
-                  <button type="button" onClick={() => setStep(0)} className="text-sm opacity-70 hover:opacity-100 transition">
+                  <button type="button" onClick={() => setStep(0)} className="text-sm text-white/80 hover:text-white transition">
                     {t('back')}
                   </button>
                   <button
                     type="button"
                     onClick={() => setStep(2)}
                     disabled={!isStep1Valid}
-                    className="inline-flex items-center justify-center rounded-xl bg-forestGreen text-lightMint px-5 py-2 text-sm font-medium shadow-soft enabled:hover:scale-[1.01] transition disabled:opacity-50"
+                    className="glass-button-primary inline-flex items-center justify-center rounded-xl px-5 py-2 text-sm font-medium enabled:hover:scale-[1.01] transition disabled:opacity-50"
                   >
                     {t('next')}
                   </button>
@@ -869,7 +869,7 @@ export default function QuestionFlow() {
 
             {step >= 2 && currentQuestion && (
               <>
-                <h3 className="text-base sm:text-lg font-medium mb-6 text-forestGreen">
+                <h3 className="text-base sm:text-lg font-semibold mb-6 text-white">
                   {currentQuestion.title[lang]}
                 </h3>
                 <div className="space-y-3">
@@ -877,9 +877,9 @@ export default function QuestionFlow() {
                     <button
                       key={idx}
                       onClick={() => handleAnswerLinked(option as QuestionOption)}
-                      className="w-full text-left p-4 rounded-xl border border-softSage/35 bg-white hover-mouse:bg-summerBeige/30 hover-mouse:border-softSage/50 hover-mouse:shadow-md active:bg-summerBeige/40 active:scale-[0.99] transition-all duration-200"
+                      className="glass-button w-full text-left p-4 rounded-xl hover:bg-white/20 active:scale-[0.99] transition-all duration-200"
                     >
-                      <span className="text-sm sm:text-base leading-relaxed">{option.text[lang]}</span>
+                      <span className="text-sm sm:text-base text-white font-normal">{option.text[lang]}</span>
                     </button>
                   ))}
                 </div>
@@ -891,7 +891,7 @@ export default function QuestionFlow() {
                       // 간단하게 step만 감소 (이전 질문 ID 추적은 향후 구현 가능)
                       setStep(Math.max(0, step - 1));
                     }}
-                    className="text-sm opacity-70 hover:opacity-100 transition"
+                    className="text-sm text-white/80 hover:text-white transition"
                   >
                     {t('back')}
                   </button>

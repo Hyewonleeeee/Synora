@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import Link from 'next/link';
 import { Suspense, useState } from 'react';
+import { ChevronDown, Hand } from 'lucide-react';
 
 function ResultContent() {
   const searchParams = useSearchParams();
@@ -34,6 +35,30 @@ function ResultContent() {
     rockBoy: { ko: '락 보이', en: 'Rock Boy' },
     gentleBoy: { ko: '젠틀 보이', en: 'Gentle Boy' },
     techBoy: { ko: '테크 보이', en: 'Tech Boy' },
+  };
+
+  const aestheticDescriptions: Record<string, string> = {
+    // 여성
+    "Clean Girl": "비누향이 날 것 같은 깨끗하고 미니멀한 분위기",
+    "Light Academia": "책과 커피 향이 어울리는 클래식한 무드",
+    "Soft Girl": "사랑스럽고 포근한 감성, 로맨틱한 무드",
+    "Balletcore": "우아한 여성스러움, 클래식한 발레리나",
+    "Dark Academia": "오래된 책장 앞에서 사색하는 지적인 무드",
+    "Mori Girl": "햇살 드는 숲속의 몽환적이고 순수한 무드",
+    "Mob Wife": "이탈리안 마피아 부인처럼 대담하고 강렬한 여성미",
+    "Acubi": "몽환적인 Y2K 감성, 슬픔과 귀여움이 섞인 얼음빛 무드",
+    "Rockstar": "자유롭고 반항적인 매력, 무너짐 속에서도 카리스마가 느껴지는 감각",
+    "Vampire": "관능적이면서도 고요한 미, 차가운 피부와 붉은 피의 대비",
+    "Boss Babe": "프로페셔널하고 당당한 카리스마, 도시적이고 정제된 파워 뷰티",
+    // 남성
+    "Clean Boy": "깔끔하고 단정한 미니멀 감성, 도시적인 세련미",
+    "Soft Boy": "감성적이고 따뜻한 무드, 부드러운 매력",
+    "Dark Academia Boy": "지적이고 클래식한 감성, 깊이 있는 분위기",
+    "Natural Boy": "자연스러움, 편안함 중심의 스타일",
+    "Street Boy": "자유롭고 트렌디한 감성, 개성 있는 스타일",
+    "Rock Boy": "강렬하고 예술적인 무드, 반항적인 자유",
+    "Gentle Boy": "품격 있고 성숙한 무드, 클래식 신사 스타일",
+    "Tech Boy": "미니멀하고 기능적인 하이테크 감성, 도시적인 무드",
   };
 
   const fragranceData: Record<string, { name: string; koreanName: string; description: string }[]> = {
@@ -121,36 +146,126 @@ function ResultContent() {
     ? styleNames[style as keyof typeof styleNames][lang]
     : (lang === 'ko' ? '알 수 없음' : 'Unknown');
 
+  // 영문 스타일명으로 aesthetic description 찾기
+  const styleNameEn = style && styleNames[style as keyof typeof styleNames]
+    ? styleNames[style as keyof typeof styleNames]['en']
+    : 'Unknown';
+  
+  const aestheticDescription = aestheticDescriptions[styleNameEn] || '';
+
   const fragrances = style ? fragranceData[style] || [] : [];
   // scroll-snap 사용으로 추가 핸들러 불필요
 
   return (
-    <main className="min-h-screen bg-grain">
-      <div className="h-screen overflow-y-auto snap-y snap-mandatory">
-        {/* 첫 번째 페이지: 추구미 결과 */}
-        <div className="min-h-screen flex items-center justify-center p-4 snap-start">
-          <div className="max-w-2xl w-full rounded-2xl bg-white/80 backdrop-blur ring-1 ring-warmBrown/10 shadow-wood p-6 sm:p-8 relative z-10">
-            <div className="text-center mb-6">
-              <h1 className="text-xl sm:text-2xl font-semibold mb-6">
-                {lang === 'ko' ? '당신의 추구미는' : 'Your style is'}
-              </h1>
-              <div className="bg-summerBeige/30 rounded-xl py-4 px-6 inline-block">
-                <p className="text-2xl sm:text-3xl font-bold text-forestGreen">
-                  {styleName}
-                </p>
-              </div>
-              <p className="text-xs sm:text-sm text-forestGreen opacity-70 mt-6">
-                {lang === 'ko' ? '아래로 스크롤하여 추천 향수를 확인해 보세요.' : 'Scroll down to see recommended fragrances.'}
-              </p>
-            </div>
+    <main className="min-h-screen relative">
+      {/* 배경 비디오 */}
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="fixed top-0 left-0 w-full h-full object-cover z-0"
+        style={{ objectFit: 'cover' }}
+      >
+        <source src="/assets/forest_background.mp4" type="video/mp4" />
+      </video>
+      
+      {/* 검은색 그라데이션 오버레이 (아주 옅게) */}
+      <div 
+        className="fixed top-0 left-0 w-full h-full z-10"
+        style={{ 
+          background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.2) 100%)',
+          pointerEvents: 'none'
+        }}
+      />
+      
+      <div className="h-screen overflow-y-auto snap-y snap-mandatory relative z-20">
+        {/* 첫 번째 페이지: 무드 인트로 섹션 (아이보리 카드 스타일) */}
+        <div className="min-h-screen flex items-center justify-center p-4 snap-start relative">
+          <div 
+            className="max-w-4xl w-full text-center relative z-10 p-8 sm:p-12 md:p-16"
+            style={{
+              backgroundColor: 'rgba(253, 252, 240, 0.95)',
+              borderRadius: '20px',
+              border: '1px solid #EBE9D6',
+              boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.15), 0 5px 15px -5px rgba(0, 0, 0, 0.1)',
+            }}
+          >
+            {/* 상단 텍스트: "당신의 추구미는" */}
+            <p 
+              className="text-lg sm:text-xl mb-4 font-light"
+              style={{
+                color: '#2C2C2C',
+                letterSpacing: '0.15em',
+                fontWeight: 300,
+                fontSize: '18px',
+                opacity: 0.7
+              }}
+            >
+              {lang === 'ko' ? '당신의 추구미는' : 'Your style is'}
+            </p>
             
-            <div className="text-center">
-              <Link
-                href="/"
-                className="inline-flex items-center justify-center rounded-xl bg-forestGreen text-lightMint px-6 py-2.5 text-sm font-medium shadow-soft transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-softSage"
+            {/* Main Title: 결과 키워드 - 아주 크고 얇은 폰트 */}
+            <h1 
+              className="text-6xl sm:text-8xl md:text-9xl font-light tracking-tight mb-6"
+              style={{
+                color: '#1A1A1A',
+                fontWeight: 300,
+                letterSpacing: '-0.05em'
+              }}
+            >
+              {styleName}
+            </h1>
+            
+            {/* Sub Description: 한 줄 설명 */}
+            {aestheticDescription && (
+              <p 
+                className="text-lg sm:text-xl md:text-2xl font-light max-w-2xl mx-auto mb-20"
+                style={{
+                  color: '#3A3A3A',
+                  fontWeight: 300,
+                  letterSpacing: '0.01em',
+                  lineHeight: 1.6,
+                  opacity: 0.85
+                }}
               >
-                {lang === 'ko' ? '홈으로 돌아가기' : 'Back to Home'}
-              </Link>
+                {aestheticDescription}
+              </p>
+            )}
+            
+            {/* 홈으로 돌아가기 버튼과 스크롤 아이콘 컨테이너 */}
+            <div className="mt-16 flex flex-col items-center gap-10">
+              {/* 홈으로 돌아가기 버튼 - 작고 심플하게 */}
+              <div>
+                <Link
+                  href="/"
+                  className="inline-flex items-center justify-center rounded-full px-6 py-2.5 text-sm font-light transition-all border"
+                  style={{
+                    color: '#2C2C2C',
+                    borderColor: '#2C2C2C',
+                    backgroundColor: 'transparent',
+                    opacity: 0.7
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.opacity = '1';
+                    e.currentTarget.style.backgroundColor = '#2C2C2C';
+                    e.currentTarget.style.color = '#FDFCF0';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.opacity = '0.7';
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = '#2C2C2C';
+                  }}
+                >
+                  {lang === 'ko' ? '홈으로 돌아가기' : 'Back to Home'}
+                </Link>
+              </div>
+              
+              {/* 스크롤 유도 아이콘 - 손가락 + 화살표 (버튼과 충분한 간격) */}
+              <div className="flex flex-col items-center gap-2 animate-bounce" style={{ color: '#2C2C2C', opacity: 0.6 }}>
+                <Hand className="h-6 w-6" />
+                <ChevronDown className="h-5 w-5 -mt-1" />
+              </div>
             </div>
           </div>
         </div>
@@ -159,26 +274,75 @@ function ResultContent() {
         {fragrances.map((fragrance, idx) => {
           const imageName = fragrance.name;
           const imagePath = `jpg/${imageName}.jpg`;
+          const isLast = idx === fragrances.length - 1;
           
           return (
             <div
               key={idx}
-              className={`min-h-screen flex items-center justify-center p-4 snap-start ${idx > 0 ? '-mt-16' : ''}`}
+              className={`min-h-screen flex items-center justify-center p-4 snap-start relative ${idx === 0 ? 'mt-32' : ''}`}
+              style={{ marginTop: idx === 0 ? '120px' : '0' }}
             >
-              <div className="max-w-4xl w-full rounded-[2.5rem] bg-gradient-to-br from-white/90 to-summerBeige/40 backdrop-blur shadow-[0_20px_60px_rgba(76,130,100,0.15)] overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_30px_80px_rgba(76,130,100,0.25)] cursor-pointer border-4 border-forestGreen/30 hover:border-forestGreen/50">
-                <div className="px-6 py-5 text-center">
-                  <p className="text-lg sm:text-2xl font-semibold text-forestGreen">
-                    {lang === 'ko' ? `추천 향수 ${idx + 1}.` : `Recommendation ${idx + 1}.`}
-                  </p>
-                </div>
-                <div className="p-6">
+              <div 
+                className="max-w-5xl w-full rounded-[20px] overflow-hidden transition-all duration-300"
+                style={{
+                  backgroundColor: 'rgba(253, 252, 240, 0.95)',
+                  border: '1px solid #EBE9D6',
+                  boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.15), 0 5px 15px -5px rgba(0, 0, 0, 0.1)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = '0 15px 40px -10px rgba(0, 0, 0, 0.2), 0 8px 20px -5px rgba(0, 0, 0, 0.15)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = '0 10px 30px -10px rgba(0, 0, 0, 0.15), 0 5px 15px -5px rgba(0, 0, 0, 0.1)';
+                }}
+              >
+                {/* 이미지 - 상단에 꽉 차게 */}
+                <div className="w-full">
                   <img 
                     src={imagePath} 
                     alt={fragrance.koreanName}
-                    className="w-full h-auto max-h-[60vh] sm:h-[78vh] object-contain rounded-3xl drop-shadow-[0_10px_30px_rgba(0,0,0,0.1)] mx-auto"
+                    className="w-full h-auto max-h-[60vh] sm:max-h-[75vh] object-cover"
                   />
                 </div>
+                
+                {/* 텍스트 정보 - 하단에 정렬 */}
+                <div className="p-6 sm:p-8">
+                  <p 
+                    className="text-lg sm:text-xl font-medium mb-3"
+                    style={{
+                      color: '#2C2C2C',
+                      opacity: 0.7
+                    }}
+                  >
+                    {lang === 'ko' ? `추천 향수 ${idx + 1}.` : `Recommendation ${idx + 1}.`}
+                  </p>
+                  <h2 
+                    className="text-2xl sm:text-3xl font-bold mb-4"
+                    style={{
+                      color: '#1A1A1A'
+                    }}
+                  >
+                    {fragrance.koreanName}
+                  </h2>
+                  <p 
+                    className="text-base sm:text-lg leading-relaxed font-normal"
+                    style={{
+                      color: '#3A3A3A',
+                      opacity: 0.85
+                    }}
+                  >
+                    {fragrance.description}
+                  </p>
+                </div>
               </div>
+              
+              {/* 마지막 향수가 아닐 때만 스크롤 유도 아이콘 표시 */}
+              {!isLast && (
+                <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce" style={{ color: '#2C2C2C', opacity: 0.6 }}>
+                  <Hand className="h-6 w-6" />
+                  <ChevronDown className="h-5 w-5" />
+                </div>
+              )}
             </div>
           );
         })}

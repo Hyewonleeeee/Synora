@@ -21,30 +21,30 @@ export default function Hero() {
   const { t } = useLanguage();
   return (
     <section className="relative isolate pb-12 sm:pb-16">
-      <div className="absolute inset-0 -z-10 bg-ambient" aria-hidden="true" />
       <motion.div
         initial="hidden"
         animate="show"
         variants={container}
-        className="mx-auto max-w-3xl px-4 sm:px-6 pt-16 sm:pt-24 text-center"
+        className="mx-auto max-w-3xl px-4 sm:px-6 pt-16 sm:pt-24 text-center floating"
       >
-        <motion.h1 variants={item} className="text-3xl sm:text-5xl font-semibold leading-tight sm:leading-[1.2] tracking-normal">
+        <motion.h1 variants={item} className="text-3xl sm:text-5xl font-bold leading-tight sm:leading-[1.2] tracking-tight text-white">
           {t('headline')}
         </motion.h1>
-        <motion.p variants={item} className="mt-6 text-base sm:text-lg opacity-80">
+        <motion.p variants={item} className="mt-6 text-base sm:text-lg opacity-90 text-white font-normal">
           {t('sub')}
         </motion.p>
-        <motion.div variants={item} className="mt-8 flex items-center justify-center gap-3">
+        <motion.div variants={item} className="mt-12 flex flex-col items-center gap-6">
           <Link
             href="/test"
-            className="inline-flex items-center justify-center rounded-2xl bg-forestGreen text-lightMint px-6 py-3 text-sm sm:text-base font-medium shadow-soft transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-softSage"
+            className="glass-button-primary inline-flex items-center justify-center rounded-2xl px-12 py-6 text-lg sm:text-2xl font-semibold text-white w-full max-w-md"
             aria-label={t('cta')}
+            style={{ minHeight: '70px' }}
           >
             {t('cta')}
           </Link>
           <a
             href="#about"
-            className="inline-flex items-center justify-center rounded-2xl bg-white/80 ring-1 ring-warmBrown/20 px-5 py-3 text-sm sm:text-base font-medium text-slateInk/80 hover:bg-white transition"
+            className="glass-button inline-flex items-center justify-center rounded-xl px-6 py-2.5 text-sm font-medium text-white"
           >
             {t('intro')}
           </a>
