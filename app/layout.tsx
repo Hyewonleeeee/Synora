@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   description: '10개의 질문으로 당신의 추구미를 찾아드려요.',
 };
 
+// GitHub Pages basePath 처리
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || (process.env.GITHUB_PAGES === 'true' ? '/Synora' : '');
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko" className="h-full">
@@ -20,7 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           className="fixed top-0 left-0 w-full h-full object-cover z-0"
           style={{ objectFit: 'cover' }}
         >
-          <source src="/assets/forest.mp4" type="video/mp4" />
+          <source src={`${basePath}/assets/forest.mp4`} type="video/mp4" />
         </video>
         
         {/* 검은색 그라데이션 오버레이 (아주 옅게) */}

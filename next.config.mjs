@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const isPages = process.env.GITHUB_PAGES === 'true';
 const repoName = 'Synora';
+const basePath = isPages ? `/${repoName}` : '';
 
 const nextConfig = {
   reactStrictMode: true,
@@ -8,8 +9,11 @@ const nextConfig = {
     typedRoutes: true,
   },
   output: 'export',
-  basePath: isPages ? `/${repoName}` : undefined,
-  assetPrefix: isPages ? `/${repoName}/` : undefined,
+  basePath: basePath || undefined,
+  assetPrefix: basePath ? `${basePath}/` : undefined,
+  env: {
+    NEXT_PUBLIC_BASE_PATH: basePath,
+  },
 };
 
 export default nextConfig;
