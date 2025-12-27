@@ -624,6 +624,12 @@ export default function QuestionFlow() {
   const [currentQuestionId, setCurrentQuestionId] = useState<string>('q1_start');
   const [isCalculating, setIsCalculating] = useState(false);
   const [dotCount, setDotCount] = useState(0);
+  // history 타입: 질문 ID와 선택한 답변의 점수 키워드를 함께 저장
+  type HistoryEntry = {
+    questionId: string;
+    scoreKeywords: StyleType[];
+  };
+  const [history, setHistory] = useState<HistoryEntry[]>([]); // 질문 ID와 선택한 답변의 점수 키워드 방문 기록
   const [scores, setScores] = useState<Scores>({
     // 여성
     cleanGirl: 0, softGirl: 0, coquette: 0, lightAcademia: 0,
@@ -649,6 +655,18 @@ export default function QuestionFlow() {
     });
   };
 
+  const subtractScore = (keywords: StyleType[]) => {
+    setScores(prev => {
+      const newScores = { ...prev };
+      keywords.forEach(k => {
+        if (newScores[k] > 0) {
+          newScores[k]--;
+        }
+      });
+      return newScores;
+    });
+  };
+
   // Linked List 방식으로 질문 가져오기
   const getQuestion = (): Question | null => {
     if (step < 2) return null;
@@ -660,6 +678,12 @@ export default function QuestionFlow() {
 
   // 답변 선택 핸들러 (Linked List 방식)
   const handleAnswerLinked = (option: QuestionOption) => {
+    // 현재 질문 ID와 선택한 답변의 점수 키워드를 history에 저장
+    setHistory(prev => [...prev, {
+      questionId: currentQuestionId,
+      scoreKeywords: option.scoreKeywords
+    }]);
+    
     // 점수 추가
     addScore(option.scoreKeywords);
     
@@ -734,7 +758,7 @@ export default function QuestionFlow() {
     }
   };
 
-  // step이 2가 될 때 currentQuestionId 초기화
+  // step이 2가 될 때 currentQuestionId 초기화 및 history 초기화
   useEffect(() => {
     if (step === 2) {
       if (gender === 'female' && currentQuestionId !== 'q1_start') {
@@ -742,6 +766,8 @@ export default function QuestionFlow() {
       } else if (gender === 'male' && currentQuestionId !== 'm_q1_start') {
         setCurrentQuestionId('m_q1_start');
       }
+      // 질문 시작 시 history 초기화
+      setHistory([]);
     }
   }, [step, gender]);
 
@@ -887,9 +913,27 @@ export default function QuestionFlow() {
                   <button 
                     type="button" 
                     onClick={() => {
-                      // Linked List 방식 - 이전 질문 ID로 돌아가기
-                      // 간단하게 step만 감소 (이전 질문 ID 추적은 향후 구현 가능)
-                      setStep(Math.max(0, step - 1));
+                      // Linked List 방식 - history를 사용해서 정확한 이전 질문으로 돌아가기
+                      if (history.length > 0) {
+                        // history에서 가장 최근 항목 가져오기
+                        const prevHistory = [...history];
+                        const lastEntry = prevHistory.pop();
+                        
+                        if (lastEntry) {
+                          // 마지막 선택한 답변의 점수 취소
+                          subtractScore(lastEntry.scoreKeywords);
+                          
+                          // history 업데이트
+                          setHistory(prevHistory);
+                          
+                          // 이전 질문으로 이동
+                          setCurrentQuestionId(lastEntry.questionId);
+                          setStep(prev => Math.max(2, prev - 1));
+                        }
+                      } else {
+                        // history가 비어있으면 step 1로 돌아가기
+                        setStep(1);
+                      }
                     }}
                     className="text-sm text-white/80 hover:text-white transition"
                   >
