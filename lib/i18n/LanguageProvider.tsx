@@ -10,6 +10,8 @@ const translations: Translations = {
   ko: {
     headline: "퍼스널 향수 테스트",
     sub: "당신의 무드를 공유하세요. GRANHAND가 향기로 대답합니다.",
+    subLine1: "당신의 무드를 공유하세요",
+    subLine2: "GRANHAND가 향기로 대답합니다.",
     cta: "테스트 시작하기",
     intro: "프로젝트 소개",
     cobrand: "Synora × GRANHAND",
@@ -43,6 +45,8 @@ const translations: Translations = {
   en: {
     headline: "Personal Fragrance Test",
     sub: "Share your mood. GRANHAND answers in fragrance.",
+    subLine1: "Share your mood.",
+    subLine2: "GRANHAND answers in fragrance.",
     cta: "Start the test",
     intro: "About the project",
     cobrand: "Synora × GRANHAND",

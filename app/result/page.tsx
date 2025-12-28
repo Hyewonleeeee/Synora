@@ -164,10 +164,11 @@ function ResultContent() {
         muted
         loop
         playsInline
+        preload="auto"
         className="fixed top-0 left-0 w-full h-full object-cover z-0"
         style={{ objectFit: 'cover' }}
       >
-        <source src="/assets/forest_background.mp4" type="video/mp4" />
+        <source src="/assets/forest.mp4" type="video/mp4" />
       </video>
       
       {/* 검은색 그라데이션 오버레이 (아주 옅게) */}
@@ -283,7 +284,7 @@ function ResultContent() {
               style={{ marginTop: idx === 0 ? '120px' : '0' }}
             >
               <div 
-                className="max-w-5xl w-full rounded-[20px] overflow-hidden transition-all duration-300"
+                className="max-w-4xl w-full mx-auto rounded-[20px] overflow-hidden transition-all duration-300"
                 style={{
                   backgroundColor: 'rgba(253, 252, 240, 0.95)',
                   border: '1px solid #EBE9D6',

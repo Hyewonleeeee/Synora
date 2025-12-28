@@ -20,6 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           muted
           loop
           playsInline
+          preload="auto"
           className="fixed top-0 left-0 w-full h-full object-cover z-0"
           style={{ objectFit: 'cover' }}
         >
