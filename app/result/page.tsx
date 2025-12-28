@@ -166,7 +166,8 @@ function ResultContent() {
         playsInline
         preload="auto"
         className="fixed top-0 left-0 w-full h-full object-cover z-0"
-        style={{ objectFit: 'cover' }}
+        style={{ objectFit: 'cover', pointerEvents: 'none' }}
+        webkit-playsinline="true"
       >
         <source src="/assets/forest.mp4" type="video/mp4" />
       </video>
