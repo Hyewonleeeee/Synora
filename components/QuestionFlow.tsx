@@ -849,10 +849,8 @@ export default function QuestionFlow() {
                       {(['female', 'male'] as const).map((g, idx) => (
                         <label 
                           key={g}
-                          className={`sm:glass-button inline-flex items-center gap-2 rounded-xl px-3 py-2 cursor-pointer transition-all duration-200 ${
-                            gender === g 
-                              ? 'border border-softSage/50 bg-white shadow-md sm:selected-gender' 
-                              : 'border border-softSage/35 bg-white shadow-sm hover:border-softSage/50 hover:shadow-md hover:bg-summerBeige/30 sm:bg-transparent sm:border-white/25 sm:text-white sm:hover:bg-white/20'
+                          className={`glass-button inline-flex items-center gap-2 rounded-xl px-3 py-2 cursor-pointer text-white transition-all duration-200 ${
+                            gender === g ? 'selected-gender' : ''
                           }`}
                         >
                           <input
@@ -861,9 +859,9 @@ export default function QuestionFlow() {
                             value={g}
                             checked={gender === g}
                             onChange={(e) => setGender(e.target.value)}
-                            className="accent-forestGreen sm:accent-white"
+                            className="accent-white"
                           />
-                          <span className={`font-normal ${gender === g ? 'text-gray-800 sm:text-[#1A1A1A] sm:font-semibold' : 'text-gray-800 sm:text-white'}`}>{t(g)}</span>
+                          <span className="font-normal">{t(g)}</span>
                         </label>
                       ))}
                     </div>
@@ -919,7 +917,7 @@ export default function QuestionFlow() {
                 <h3 className="text-base sm:text-lg font-semibold mb-6 text-white">
                   {currentQuestion.title[lang] || currentQuestion.title['en']}
                 </h3>
-                <div className="space-y-3">
+                <div key={currentQuestionId} className="space-y-3">
                   {currentQuestion.options.map((option, idx) => (
                     <button
                       key={idx}
