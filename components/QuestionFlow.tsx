@@ -679,8 +679,8 @@ export default function QuestionFlow() {
 
   // 답변 선택 핸들러 (Linked List 방식)
   const handleAnswerLinked = (option: QuestionOption, index: number) => {
-    // 선택 상태 초기화 (모든 버튼에서 .selected 제거)
-    setSelectedOptionIndex(null);
+    // 선택된 옵션 인덱스 설정 (시각적 피드백용)
+    setSelectedOptionIndex(index);
     
     // 현재 질문 ID와 선택한 답변의 점수 키워드를 history에 저장
     setHistory(prev => [...prev, {
@@ -690,9 +690,6 @@ export default function QuestionFlow() {
     
     // 점수 추가
     addScore(option.scoreKeywords);
-    
-    // 선택된 옵션 인덱스 설정 (시각적 피드백용)
-    setSelectedOptionIndex(index);
     
     // 다음 질문으로 이동
     if (option.nextQuestionId === 'result_calculation') {
@@ -779,8 +776,17 @@ export default function QuestionFlow() {
       }
       // 질문 시작 시 history 초기화
       setHistory([]);
+      // 선택 상태 초기화
+      setSelectedOptionIndex(null);
     }
   }, [step, gender]);
+
+  // 질문이 변경될 때마다 선택 상태 초기화
+  useEffect(() => {
+    if (step >= 2) {
+      setSelectedOptionIndex(null);
+    }
+  }, [currentQuestionId, step]);
 
   const currentQuestion = getQuestion();
   const isStep0Valid = age !== '' && gender !== '';
@@ -843,8 +849,10 @@ export default function QuestionFlow() {
                       {(['female', 'male'] as const).map((g, idx) => (
                         <label 
                           key={g}
-                          className={`glass-button inline-flex items-center gap-2 rounded-xl px-3 py-2 cursor-pointer text-white transition-all duration-200 ${
-                            gender === g ? 'selected-gender' : ''
+                          className={`sm:glass-button inline-flex items-center gap-2 rounded-xl px-3 py-2 cursor-pointer transition-all duration-200 ${
+                            gender === g 
+                              ? 'border border-softSage/50 bg-white shadow-md sm:selected-gender' 
+                              : 'border border-softSage/35 bg-white shadow-sm hover:border-softSage/50 hover:shadow-md hover:bg-summerBeige/30 sm:bg-transparent sm:border-white/25 sm:text-white sm:hover:bg-white/20'
                           }`}
                         >
                           <input
@@ -853,9 +861,9 @@ export default function QuestionFlow() {
                             value={g}
                             checked={gender === g}
                             onChange={(e) => setGender(e.target.value)}
-                            className="accent-white"
+                            className="accent-forestGreen sm:accent-white"
                           />
-                          <span className="font-normal">{t(g)}</span>
+                          <span className={`font-normal ${gender === g ? 'text-gray-800 sm:text-[#1A1A1A] sm:font-semibold' : 'text-gray-800 sm:text-white'}`}>{t(g)}</span>
                         </label>
                       ))}
                     </div>
