@@ -916,7 +916,7 @@ export default function QuestionFlow() {
                     <button
                       key={idx}
                       onClick={() => handleAnswerLinked(option as QuestionOption, idx)}
-                      className={`glass-button w-full text-left p-4 rounded-xl hover:bg-white/20 active:scale-[0.99] transition-all duration-200 ${
+                      className={`glass-button w-full text-left p-4 rounded-xl active:scale-[0.99] transition-all duration-200 ${
                         selectedOptionIndex === idx ? 'selected-option' : ''
                       }`}
                     >

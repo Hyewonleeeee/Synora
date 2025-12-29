@@ -164,10 +164,13 @@ button {
   transition: all 0.3s ease;
 }
 
-.glass-button:hover {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.35);
-  transform: scale(1.02);
+/* 호버 효과는 마우스가 있는 기기에서만 적용 (모바일 sticky hover 방지) */
+@media (hover: hover) and (pointer: fine) {
+  .glass-button:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.35);
+    transform: scale(1.02);
+  }
 }
 
 .glass-button-primary {
@@ -179,10 +182,13 @@ button {
   transition: all 0.3s ease;
 }
 
-.glass-button-primary:hover {
-  background: rgba(122, 155, 107, 0.5);
-  border-color: rgba(122, 155, 107, 0.4);
-  transform: scale(1.05);
+/* 호버 효과는 마우스가 있는 기기에서만 적용 (모바일 sticky hover 방지) */
+@media (hover: hover) and (pointer: fine) {
+  .glass-button-primary:hover {
+    background: rgba(122, 155, 107, 0.5);
+    border-color: rgba(122, 155, 107, 0.4);
+    transform: scale(1.05);
+  }
 }
 
 /* 선택된 버튼 강조 효과 */
