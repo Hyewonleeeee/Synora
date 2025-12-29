@@ -1,4 +1,5 @@
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -15,11 +16,20 @@ html, body {
 }
 
 body {
-  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  font-family: 'Pretendard', 'Noto Sans SC', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
   color: white;
   letter-spacing: -0.01em;
   line-height: 1.7;
   font-weight: 400;
+}
+
+/* 중국어/일본어 폰트 지원 */
+[lang="cn"], [lang="zh-CN"] {
+  font-family: 'Noto Sans SC', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+[lang="jp"], [lang="ja"] {
+  font-family: 'Noto Sans JP', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Pretendard 폰트 적용 - 모든 텍스트에 적용 */
@@ -66,6 +76,15 @@ button {
   -webkit-backdrop-filter: blur(15px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* 드롭다운 메뉴 글래스모피즘 효과 */
+.glass-dropdown {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
 }
 
 .glass-question-box {
@@ -164,6 +183,21 @@ button {
   background: rgba(122, 155, 107, 0.5);
   border-color: rgba(122, 155, 107, 0.4);
   transform: scale(1.05);
+}
+
+/* 선택된 버튼 강조 효과 */
+.glass-button.selected-gender,
+.glass-button.selected-option {
+  transform: scale(1.05);
+  border-color: rgba(255, 255, 255, 0.6) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+}
+
+.glass-button.selected-gender span,
+.glass-button.selected-option span {
+  color: #1A1A1A !important;
+  font-weight: 600;
 }
 
 /* Wood grain effect (기존 유지하되 투명도 조정) */

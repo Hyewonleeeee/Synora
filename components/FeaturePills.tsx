@@ -22,12 +22,12 @@ export default function FeaturePills() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.35, delay: 0.15 * i }}
-            className="glass-card rounded-xl p-3 sm:p-4 flex flex-col items-center text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white/15"
+            className="glass-card rounded-xl p-3 sm:p-4 flex flex-col items-center text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white/15 min-h-[80px] sm:min-h-[90px]"
           >
             <f.icon className="h-4 w-4 sm:h-5 sm:w-5 text-white/90 mb-2" aria-hidden="true" />
-            <div>
-              <h3 className="font-semibold text-white text-xs sm:text-sm">{t(f.titleKey)}</h3>
-              <p className={`text-xs opacity-90 mt-1 text-white leading-tight font-normal ${lang === 'en' && f.descKey === 'pill3Desc' ? 'whitespace-nowrap' : ''}`}>{t(f.descKey)}</p>
+            <div className="w-full">
+              <h3 className="font-semibold text-white text-xs sm:text-sm break-words">{t(f.titleKey)}</h3>
+              <p className="text-xs opacity-90 mt-1 text-white leading-tight font-normal break-words hyphens-auto">{t(f.descKey)}</p>
             </div>
           </motion.li>
         ))}

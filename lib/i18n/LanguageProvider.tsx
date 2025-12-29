@@ -1,8 +1,8 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState } from 'react';
+import { createContext, useContext, useMemo, useState, useCallback, useEffect } from 'react';
 
-type Language = 'ko' | 'en';
+type Language = 'ko' | 'en' | 'cn' | 'jp';
 
 type Translations = Record<Language, Record<string, string>>;
 
@@ -41,6 +41,8 @@ const translations: Translations = {
     select: "선택하세요",
     submit: "제출하기",
     testTitle: "퍼스널 향수 테스트",
+    langCn: "中文",
+    langJp: "日本語",
   },
   en: {
     headline: "Personal Fragrance Test",
@@ -76,6 +78,82 @@ const translations: Translations = {
     select: "Select",
     submit: "Submit",
     testTitle: "Personal Fragrance Test",
+    langCn: "中文",
+    langJp: "日本語",
+  },
+  cn: {
+    headline: "个人香水测试",
+    sub: "分享你的心情。GRANHAND用香味回答。",
+    subLine1: "分享你的心情。",
+    subLine2: "GRANHAND用香味回答。",
+    cta: "开始测试",
+    intro: "项目介绍",
+    cobrand: "Synora × GRANHAND",
+    langKo: "한국어",
+    langEn: "English",
+    langCn: "中文",
+    langJp: "日本語",
+    pill1Title: "个性化推荐",
+    pill1Desc: "基于性格/心情/MBTI",
+    pill2Title: "声音景观",
+    pill2Desc: "匹配香味的空间音效",
+    pill3Title: "快闪联动",
+    pill3Desc: "线下快闪扩展体验",
+    footer: "© 2025 Synora. All rights reserved.",
+    privacy: "Privacy",
+    terms: "Terms",
+    step: "步骤",
+    step1Title: "年龄 · 性别",
+    step2Title: "MBTI",
+    age: "年龄",
+    ageHelp: "请输入大致年龄以获得更准确的推荐。",
+    gender: "性别",
+    female: "女性",
+    male: "男性",
+    other: "其他/不选择",
+    next: "下一步",
+    back: "返回",
+    mbti: "MBTI",
+    select: "请选择",
+    submit: "提交",
+    testTitle: "个人香水测试",
+  },
+  jp: {
+    headline: "パーソナル香水テスト",
+    sub: "あなたのムードを共有してください。GRANHANDが香りで答えます。",
+    subLine1: "あなたのムードを共有してください。",
+    subLine2: "GRANHANDが香りで答えます。",
+    cta: "テストを開始",
+    intro: "プロジェクト紹介",
+    cobrand: "Synora × GRANHAND",
+    langKo: "한국어",
+    langEn: "English",
+    langCn: "中文",
+    langJp: "日本語",
+    pill1Title: "パーソナライズ",
+    pill1Desc: "性格/ムード/MBTIベース",
+    pill2Title: "サウンドスケープ",
+    pill2Desc: "香りに合わせた空間音響",
+    pill3Title: "ポップアップ連携",
+    pill3Desc: "オフラインポップアップでの拡張体験",
+    footer: "© 2025 Synora. All rights reserved.",
+    privacy: "Privacy",
+    terms: "Terms",
+    step: "ステップ",
+    step1Title: "年齢 · 性別",
+    step2Title: "MBTI",
+    age: "年齢",
+    ageHelp: "より正確な推奨のために、おおよその年齢を入力してください。",
+    gender: "性別",
+    female: "女性",
+    male: "男性",
+    other: "その他/選択しない",
+    next: "次へ",
+    back: "戻る",
+    mbti: "MBTI",
+    select: "選択してください",
+    submit: "提出",
+    testTitle: "パーソナル香水テスト",
   },
 };
 
@@ -84,18 +162,78 @@ type LanguageContextValue = {
   t: (key: keyof typeof translations["ko"]) => string;
   toggle: () => void;
   set: (l: Language) => void;
+  isLangMenuOpen: boolean;
+  setIsLangMenuOpen: (open: boolean) => void;
 };
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLang] = useState<Language>('ko');
+  // localStorage에서 저장된 언어를 불러오거나 기본값 'ko' 사용
+  const [lang, setLang] = useState<Language>(() => {
+    if (typeof window !== 'undefined') {
+      const savedLang = localStorage.getItem('app-lang') as Language | null;
+      if (savedLang && ['ko', 'en', 'cn', 'jp'].includes(savedLang)) {
+        return savedLang;
+      }
+    }
+    return 'ko';
+  });
+  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
+  
+  // 앱 시작 시 localStorage에서 언어 확인
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedLang = localStorage.getItem('app-lang') as Language | null;
+      if (savedLang && ['ko', 'en', 'cn', 'jp'].includes(savedLang)) {
+        setLang(savedLang);
+      }
+    }
+  }, []);
+  
+  // 언어 변경 함수를 useCallback으로 안정화
+  const handleSetLang = useCallback((newLang: Language) => {
+    if (['ko', 'en', 'cn', 'jp'].includes(newLang)) {
+      setLang(newLang);
+      // localStorage에 저장
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('app-lang', newLang);
+      }
+    }
+  }, []);
+  
+  const t = useCallback((key: keyof typeof translations["ko"]) => {
+    // 현재 언어의 번역이 있으면 사용
+    if (translations[lang] && translations[lang][key]) {
+      return translations[lang][key];
+    }
+    // 영어 번역으로 폴백
+    if (translations['en'] && translations['en'][key]) {
+      return translations['en'][key];
+    }
+    // 한국어 번역으로 폴백
+    if (translations['ko'] && translations['ko'][key]) {
+      return translations['ko'][key];
+    }
+    // 모두 없으면 키 자체를 반환
+    return key;
+  }, [lang]);
+  
+  const toggle = useCallback(() => {
+    const languageOrder: Language[] = ['ko', 'en', 'cn', 'jp'];
+    const currentIndex = languageOrder.indexOf(lang);
+    const nextIndex = (currentIndex + 1) % languageOrder.length;
+    setLang(languageOrder[nextIndex]);
+  }, [lang]);
+  
   const value = useMemo<LanguageContextValue>(() => ({
     lang,
-    t: (key) => translations[lang][key],
-    toggle: () => setLang((prev) => (prev === 'ko' ? 'en' : 'ko')),
-    set: setLang,
-  }), [lang]);
+    t,
+    toggle,
+    set: handleSetLang,
+    isLangMenuOpen,
+    setIsLangMenuOpen,
+  }), [lang, t, toggle, handleSetLang, isLangMenuOpen]);
 
   return (
     <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>

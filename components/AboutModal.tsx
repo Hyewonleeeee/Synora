@@ -35,9 +35,31 @@ export default function AboutModal({ isOpen, onClose }: AboutModalProps) {
       paragraph2Bold2: "immersive space",
       paragraph2End2: "experience.",
     },
+    cn: {
+      title: "为了香味，超越感官沉浸",
+      paragraph1: "与追求无形价值的 ",
+      paragraph1Bold: "GRANHAND",
+      paragraph1End: "一起发现您真正的追求美学。通过简单的测试，定义您向往的'个人氛围'，我们将为您推荐两种能深深融入该氛围的香水。",
+      paragraph2: "我们更进一步，提供承载每种香水灵魂的 ",
+      paragraph2Bold: "声音景观",
+      paragraph2End: "。当香味充满空间时，与这种氛围相匹配的声音会加入其中，创造您自己的完整 ",
+      paragraph2Bold2: "沉浸式空间",
+      paragraph2End2: "体验。",
+    },
+    jp: {
+      title: "香り、感覚的没入を超えて",
+      paragraph1: "見えない価値を追求する ",
+      paragraph1Bold: "GRANHAND",
+      paragraph1End: "と共に、あなたの真の追求美を発見してください。簡単なテストを通じて、あなたが憧れる「自分だけのムード」を定義し、その雰囲気に最も深く浸透する2つの香水をおすすめします。",
+      paragraph2: "私たちはさらに一歩進んで、各香水の魂を込めた ",
+      paragraph2Bold: "サウンドスケープ",
+      paragraph2End: "を提供します。香りが空間を満たすとき、そのムードに合わせて作られたサウンドが加わり、あなただけの完全な ",
+      paragraph2Bold2: "没入型空間",
+      paragraph2End2: "を体験できます。",
+    },
   };
 
-  const text = content[lang];
+  const text = content[lang] || content['en'];
 
   return (
     <AnimatePresence>

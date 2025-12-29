@@ -143,7 +143,9 @@ function ResultContent() {
   };
 
   const styleName = style && styleNames[style as keyof typeof styleNames]
-    ? styleNames[style as keyof typeof styleNames][lang]
+    ? (lang === 'ko' || lang === 'en' 
+        ? styleNames[style as keyof typeof styleNames][lang]
+        : styleNames[style as keyof typeof styleNames]['en']) // cn, jp는 영어로 폴백
     : (lang === 'ko' ? '알 수 없음' : 'Unknown');
 
   // 영문 스타일명으로 aesthetic description 찾기
