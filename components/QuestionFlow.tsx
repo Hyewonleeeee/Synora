@@ -679,9 +679,6 @@ export default function QuestionFlow() {
 
   // 답변 선택 핸들러 (Linked List 방식)
   const handleAnswerLinked = (option: QuestionOption, index: number) => {
-    // 선택된 옵션 인덱스 설정 (시각적 피드백용)
-    setSelectedOptionIndex(index);
-    
     // 현재 질문 ID와 선택한 답변의 점수 키워드를 history에 저장
     setHistory(prev => [...prev, {
       questionId: currentQuestionId,
@@ -695,12 +692,9 @@ export default function QuestionFlow() {
     if (option.nextQuestionId === 'result_calculation') {
       calculateResult();
     } else {
-      // 다음 질문으로 넘어가기 전에 선택 상태 초기화
-      setTimeout(() => {
-        setSelectedOptionIndex(null);
-        setCurrentQuestionId(option.nextQuestionId);
-        setStep(prev => prev + 1);
-      }, 300); // 짧은 딜레이로 선택 효과를 보여줌
+      // 질문 ID를 먼저 변경하면 useEffect가 자동으로 selectedOptionIndex를 초기화함
+      setCurrentQuestionId(option.nextQuestionId);
+      setStep(prev => prev + 1);
     }
   };
 
