@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const isPages = process.env.GITHUB_PAGES === 'true';
-const repoName = 'Synora';
+const repoName = 'Kindle';
 const basePath = isPages ? `/${repoName}` : '';
 
 const nextConfig = {

@@ -53,8 +53,8 @@ export default function TopBar() {
   return (
     <header className="sticky top-0 z-40 glass-container border-b border-white/20" lang={lang}>
       <nav className="mx-auto max-w-6xl px-4 sm:px-6 h-14 flex items-center justify-between">
-        <div className="font-semibold tracking-tight text-white" aria-label="Synora" role="img">
-          Synora
+        <div className="font-semibold tracking-tight text-white" aria-label="Kindle" role="img">
+          Kindle
         </div>
         <div className="text-sm sm:text-base font-medium opacity-90 text-white" aria-label={t('cobrand')}>
           {t('cobrand')}

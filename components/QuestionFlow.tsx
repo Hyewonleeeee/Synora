@@ -274,16 +274,16 @@ const femaleTetoQuestions: Record<string, Question> = {
     id: 'q4_makeup_neat',
     title: { ko: '당신은 어떤 메이크업이 더 매력적으로 느껴지나요?', en: 'What makeup feels more attractive to you?', cn: '哪种妆容让您感觉更有魅力？', jp: 'どのメイクがより魅力的に感じられますか？' },
     options: [
-      { text: { ko: '카리스마 있는 아이라인과 또렷한 윤곽 메이크업', en: 'Charismatic eyeliner and clear contour makeup', cn: '有魅力的眼线和清晰的轮廓妆容', jp: 'カリスマ性のあるアイライナーとはっきりした輪郭メイク' }, nextQuestionId: 'q5_gaze_neat', scoreKeywords: ['bossBabe', 'mobWife'] },
-      { text: { ko: '카리스마 있는 아이라인과 또렷한 윤곽 메이크업', en: 'Charismatic eyeliner and clear contour makeup', cn: '有魅力的眼线和清晰的轮廓妆容', jp: 'カリスマ性のあるアイライナーとはっきりした輪郭メイク' }, nextQuestionId: 'q5_gaze_neat', scoreKeywords: ['bossBabe', 'mobWife'] },
+      { text: { ko: '프로페셔널하고 정제된 파워 메이크업', en: 'Professional and refined power makeup', cn: '专业而精致的强力妆容', jp: 'プロフェッショナルで洗練されたパワーメイク' }, nextQuestionId: 'q5_gaze_neat', scoreKeywords: ['bossBabe'] },
+      { text: { ko: '카리스마 있는 아이라인과 또렷한 윤곽 메이크업', en: 'Charismatic eyeliner and clear contour makeup', cn: '有魅力的眼线和清晰的轮廓妆容', jp: 'カリスマ性のあるアイライナーとはっきりした輪郭メイク' }, nextQuestionId: 'q5_gaze_neat', scoreKeywords: ['mobWife'] },
     ],
   },
   q4_makeup_rebel: {
     id: 'q4_makeup_rebel',
     title: { ko: '당신은 어떤 메이크업이 더 매력적으로 느껴지나요?', en: 'What makeup feels more attractive to you?', cn: '哪种妆容让您感觉更有魅力？', jp: 'どのメイクがより魅力的に感じられますか？' },
     options: [
-      { text: { ko: '살짝 번진 아이라인과 메탈릭 포인트의 메이크업', en: 'Slightly smudged eyeliner and metallic point makeup', cn: '轻微晕染的眼线和金属感点缀妆容', jp: '少しにじんだアイライナーとメタリックポイントのメイク' }, nextQuestionId: 'q5_gaze_rebel', scoreKeywords: ['bossBabe', 'rockstar'] },
-      { text: { ko: '살짝 번진 아이라인과 메탈릭 포인트의 메이크업', en: 'Slightly smudged eyeliner and metallic point makeup', cn: '轻微晕染的眼线和金属感点缀妆容', jp: '少しにじんだアイライナーとメタリックポイントのメイク' }, nextQuestionId: 'q5_gaze_rebel', scoreKeywords: ['bossBabe', 'rockstar'] },
+      { text: { ko: '프로페셔널하고 정제된 파워 메이크업', en: 'Professional and refined power makeup', cn: '专业而精致的强力妆容', jp: 'プロフェッショナルで洗練されたパワーメイク' }, nextQuestionId: 'q5_gaze_rebel', scoreKeywords: ['bossBabe'] },
+      { text: { ko: '살짝 번진 아이라인과 메탈릭 포인트의 메이크업', en: 'Slightly smudged eyeliner and metallic point makeup', cn: '轻微晕染的眼线和金属感点缀妆容', jp: '少しにじんだアイライナーとメタリックポイントのメイク' }, nextQuestionId: 'q5_gaze_rebel', scoreKeywords: ['rockstar'] },
     ],
   },
   q4_makeup_vintage: {
@@ -861,7 +861,7 @@ export default function QuestionFlow() {
                             onChange={(e) => setGender(e.target.value)}
                             className="accent-white"
                           />
-                          <span className="font-normal">{t(g)}</span>
+                          <span className="font-normal text-white">{t(g)}</span>
                         </label>
                       ))}
                     </div>
